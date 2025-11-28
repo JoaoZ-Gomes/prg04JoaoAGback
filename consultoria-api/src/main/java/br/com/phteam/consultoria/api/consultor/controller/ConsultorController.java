@@ -1,5 +1,6 @@
 package br.com.phteam.consultoria.api.consultor.controller;
 
+import br.com.phteam.consultoria.api.consultor.model.Consultor;
 import br.com.phteam.consultoria.api.consultor.service.ConsultorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
