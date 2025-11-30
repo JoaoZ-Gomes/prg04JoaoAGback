@@ -14,8 +14,6 @@ public class AuthService {
     private final ClienteRepository clienteRepository;
     private final ConsultorRepository consultorRepository;
 
-    // Em produção, o ideal é usar PasswordEncoder (BCrypt)
-    // private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public AuthService(ClienteRepository clienteRepository, ConsultorRepository consultorRepository) {
