@@ -1,7 +1,10 @@
 package br.com.phteam.consultoria.api.auth.service;
 
+import br.com.phteam.consultoria.api.auth.dto.LoginRequestDTO;
+import br.com.phteam.consultoria.api.auth.dto.LoginSuccessDTO;
 import br.com.phteam.consultoria.api.cliente.repository.ClienteRepository;
 import br.com.phteam.consultoria.api.consultor.repository.ConsultorRepository;
+import br.com.phteam.consultoria.api.exception.RegraDeNegocioException;
 import br.com.phteam.consultoria.api.model.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,51 +12,42 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
-public class AuthService {
+public class AuthService implements AuthIService {
 
     private final ClienteRepository clienteRepository;
     private final ConsultorRepository consultorRepository;
 
-
     @Autowired
-    public AuthService(ClienteRepository clienteRepository, ConsultorRepository consultorRepository) {
+    public AuthService(ClienteRepository clienteRepository,
+                       ConsultorRepository consultorRepository) {
         this.clienteRepository = clienteRepository;
         this.consultorRepository = consultorRepository;
     }
 
-    /**
-     * Tenta autenticar um usuário (Cliente ou Consultor) e, se bem-sucedido, gera um token.
-     * @param email O email fornecido pelo usuário.
-     * @param senha A senha fornecida pelo usuário.
-     * @return O token de autenticação (simulado).
-     */
-    public String autenticarEGerarToken(String email, String senha) {
+    @Override
+    public LoginSuccessDTO autenticar(LoginRequestDTO request) {
 
-        // Busca primeiro em Cliente, se não achar, busca em Consultor
-        Optional<Usuario> usuario = clienteRepository.findByEmail(email)
-                .map(u -> (Usuario) u)
-                .or(() -> consultorRepository.findByEmail(email)
-                        .map(u -> (Usuario) u));
+        // 1. Tenta encontrar o usuário como Cliente
+        Optional<Usuario> usuarioOptional = clienteRepository.findByEmail(request.getEmail())
+                .map(cliente -> (Usuario) cliente);
 
-        if (usuario.isEmpty()) {
-            throw new RuntimeException("Usuário não encontrado.");
+        // 2. CORREÇÃO: Usando !isPresent() ao invés de isEmpty() para compatibilidade com Java 8
+        if (!usuarioOptional.isPresent()) {
+            usuarioOptional = consultorRepository.findByEmail(request.getEmail())
+                    .map(consultor -> (Usuario) consultor);
         }
 
-        Usuario user = usuario.get();
+        Usuario usuario = usuarioOptional.orElseThrow(() ->
+                new RegraDeNegocioException("Credenciais inválidas: Usuário não encontrado ou e-mail incorreto."));
 
-        boolean senhaCorreta = verificarSenhaSimulada(senha, user.getHashSenha());
-
-        if (!senhaCorreta) {
-            throw new RuntimeException("Senha inválida.");
+        // 3. Validação de Senha em Texto Puro (TEMPORÁRIA!)
+        if (!usuario.getSenha().equals(request.getSenha())) {
+            throw new RegraDeNegocioException("Credenciais inválidas: Senha incorreta.");
         }
 
-        // Simulação de token JWT
-        return "JWT_TOKEN_PARA_" + user.getNome().toUpperCase();
-    }
+        String tipo = usuario.getClass().getSimpleName();
 
-    // Método auxiliar para simular a verificação de senha
-    private boolean verificarSenhaSimulada(String senhaDigitada, String hashArmazenado) {
-        // Apenas para testes
-        return senhaDigitada.equals("123456");
+        // 4. Retorna o DTO de Sucesso
+        return new LoginSuccessDTO("Autenticado com sucesso.", usuario.getEmail(), tipo);
     }
 }

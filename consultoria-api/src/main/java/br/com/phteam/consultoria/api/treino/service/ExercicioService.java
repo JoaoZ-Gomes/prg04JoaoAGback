@@ -2,17 +2,18 @@ package br.com.phteam.consultoria.api.treino.service;
 
 import br.com.phteam.consultoria.api.treino.model.Exercicio;
 import br.com.phteam.consultoria.api.treino.repository.ExercicioRepository;
+
+import br.com.phteam.consultoria.api.exception.RegraDeNegocioException;
+import br.com.phteam.consultoria.api.exception.RecursoNaoEncontradoException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Serviço de domínio para a gestão do Catálogo de Exercícios (CRUD de Exercicios base).
- */
 @Service
-public class ExercicioService {
+public class ExercicioService implements ExercicioIService { //
 
     private final ExercicioRepository exercicioRepository;
 
@@ -21,34 +22,29 @@ public class ExercicioService {
         this.exercicioRepository = exercicioRepository;
     }
 
-    /**
-     * Persiste um novo Exercício no catálogo.
-     * @param exercicio Objeto Exercicio a ser persistido.
-     * @return Exercicio salvo.
-     */
+    @Override
     public Exercicio salvar(Exercicio exercicio) {
-        // Regra de Negócio: Valida unicidade do nome do exercício antes da persistência.
+        // Regra de Negócio: Valida unicidade do nome.
         if (exercicioRepository.findByNome(exercicio.getNome()).isPresent()) {
-            throw new IllegalArgumentException("Já existe um exercício com este nome no catálogo.");
+            // Substituído o IllegalArgumentException por RegraDeNegocioException (HTTP 400)
+            throw new RegraDeNegocioException("Já existe um exercício com este nome no catálogo.");
         }
         return exercicioRepository.save(exercicio);
     }
 
+    @Override
     public Optional<Exercicio> buscarPorId(Long id) {
         return exercicioRepository.findById(id);
     }
 
+    @Override
     public List<Exercicio> buscarTodos() {
         return exercicioRepository.findAll();
     }
 
-    /**
-     * Atualiza os detalhes de um Exercício existente.
-     * @param id ID do Exercício a ser atualizado.
-     * @param detalhesExercicio Objeto contendo os dados de atualização.
-     * @return Optional contendo o Exercício atualizado ou vazio.
-     */
+    @Override
     public Optional<Exercicio> atualizar(Long id, Exercicio detalhesExercicio) {
+        // O Controller usará .orElseThrow() aqui para o 404
         return exercicioRepository.findById(id)
                 .map(exercicioExistente -> {
                     // Atualização parcial dos campos relevantes
@@ -66,7 +62,13 @@ public class ExercicioService {
                 });
     }
 
+    @Override
     public void excluirPorId(Long id) {
+        // Verifica a existência antes de deletar e lança RecursoNaoEncontradoException (HTTP 404)
+        if (!exercicioRepository.existsById(id)) {
+            throw new RecursoNaoEncontradoException("Exercício não encontrado com ID: " + id);
+        }
+
         // Nota: Considerar regra de negócio para impedir exclusão se o exercício estiver em uso.
         exercicioRepository.deleteById(id);
     }

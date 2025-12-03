@@ -1,7 +1,11 @@
 package br.com.phteam.consultoria.api.consultor.controller;
 
+import br.com.phteam.consultoria.api.config.mapper.ObjectMapperUtil;
+import br.com.phteam.consultoria.api.consultor.dto.ConsultorRequestDTO;
+import br.com.phteam.consultoria.api.consultor.dto.ConsultorResponseDTO;
 import br.com.phteam.consultoria.api.consultor.model.Consultor;
 import br.com.phteam.consultoria.api.consultor.service.ConsultorService;
+import br.com.phteam.consultoria.api.exception.RecursoNaoEncontradoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,50 +17,74 @@ import java.util.List;
 public class ConsultorController {
 
     private final ConsultorService consultorService;
+    private final ObjectMapperUtil mapper; // Adicionar o Mapper
 
     @Autowired
-    public ConsultorController(ConsultorService consultorService) {
+    public ConsultorController(ConsultorService consultorService, ObjectMapperUtil mapper) {
         this.consultorService = consultorService;
+        this.mapper = mapper;
     }
 
-    // POST /api/consultores
+    // POST /api/consultores - Agora recebe o DTO de Requisição e retorna o DTO de Resposta
     @PostMapping
-    public ResponseEntity<Consultor> criarConsultor(@RequestBody Consultor consultor) {
+    public ResponseEntity<ConsultorResponseDTO> criarConsultor(@RequestBody ConsultorRequestDTO consultorRequest) {
+        // 1. Converte DTO -> Model
+        Consultor consultor = mapper.map(consultorRequest, Consultor.class);
+
+        // 2. Salva no Service (a lógica de criptografia de senha deve estar aqui)
         Consultor consultorSalvo = consultorService.salvar(consultor);
-        return ResponseEntity.status(201).body(consultorSalvo);
+
+        // 3. Converte Model -> DTO de Resposta
+        ConsultorResponseDTO response = mapper.map(consultorSalvo, ConsultorResponseDTO.class);
+
+        return ResponseEntity.status(201).body(response);
     }
 
     // GET /api/consultores
     @GetMapping
-    public ResponseEntity<List<Consultor>> buscarTodosConsultores() {
+    public ResponseEntity<List<ConsultorResponseDTO>> buscarTodosConsultores() {
         List<Consultor> consultores = consultorService.buscarTodos();
-        return ResponseEntity.ok(consultores);
+        // Converte List<Consultor> -> List<ConsultorResponseDTO>
+        List<ConsultorResponseDTO> responseList = mapper.mapAll(consultores, ConsultorResponseDTO.class);
+        return ResponseEntity.ok(responseList);
     }
 
     // GET /api/consultores/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<Consultor> buscarConsultorPorId(@PathVariable Long id) {
-        return consultorService.buscarPorId(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<ConsultorResponseDTO> buscarConsultorPorId(@PathVariable Long id) {
+        Consultor consultor = consultorService.buscarPorId(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Consultor não encontrado com ID: " + id));
+
+        // Converte Model -> DTO de Resposta
+        ConsultorResponseDTO response = mapper.map(consultor, ConsultorResponseDTO.class);
+        return ResponseEntity.ok(response);
     }
 
     // PUT /api/consultores/{id}
     @PutMapping("/{id}")
-    public ResponseEntity<Consultor> atualizarConsultor(@PathVariable Long id, @RequestBody Consultor detalhesConsultor) {
-        return consultorService.atualizar(id, detalhesConsultor)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<ConsultorResponseDTO> atualizarConsultor(@PathVariable Long id, @RequestBody ConsultorRequestDTO detalhesConsultor) {
+        // O serviço precisa ser ajustado para receber o DTO
+        // Por enquanto, vou manter a conversão aqui
+        Consultor dadosAtualizados = mapper.map(detalhesConsultor, Consultor.class);
+
+        Consultor consultorAtualizado = consultorService.atualizar(id, dadosAtualizados)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Consultor não encontrado para atualização com ID: " + id));
+
+        // Converte Model -> DTO de Resposta
+        ConsultorResponseDTO response = mapper.map(consultorAtualizado, ConsultorResponseDTO.class);
+        return ResponseEntity.ok(response);
     }
 
     // DELETE /api/consultores/{id}
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluirConsultor(@PathVariable Long id) {
-        if (consultorService.buscarPorId(id).isPresent()) {
-            consultorService.excluirPorId(id);
+    public ResponseEntity<Void> deletarConsultor(@PathVariable Long id) {
+        // Supondo que o serviço lança RecursoNaoEncontradoException se o ID não existir
+        // Caso contrário, você deve lançar a exceção aqui.
+        if (consultorService.deletarConsultor(id)) {
             return ResponseEntity.noContent().build();
         } else {
-            return ResponseEntity.notFound().build();
+            // Lança a exceção de Recurso Não Encontrado se não deletar
+            throw new RecursoNaoEncontradoException("Consultor não encontrado para exclusão com ID: " + id);
         }
     }
 }

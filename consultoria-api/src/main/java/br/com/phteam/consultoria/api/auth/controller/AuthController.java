@@ -1,48 +1,35 @@
 package br.com.phteam.consultoria.api.auth.controller;
 
-import br.com.phteam.consultoria.api.auth.service.AuthService;
-import br.com.phteam.consultoria.api.auth.dto.LoginRequestDTO; // DTO para receber email/senha
-import org.springframework.beans.factory.annotation.Autowired;
+import br.com.phteam.consultoria.api.auth.dto.LoginRequestDTO;
+import br.com.phteam.consultoria.api.auth.dto.LoginSuccessDTO; // Import alterado
+import br.com.phteam.consultoria.api.auth.service.AuthIService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
-
-    @Autowired
-    public AuthController(AuthService authService) {
-        this.authService = authService;
-    }
+    private final AuthIService authService;
 
     /**
-     * POST /api/auth/login : Endpoint para login (Autenticação).
-     * @param request DTO contendo email e senha.
-     * @return Retorna um token JWT ou erro de autenticação.
+     * Endpoint para autenticar um Cliente ou Consultor.
+     * URL: /api/auth/login
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDTO request) {
-        // o serviço de autenticação deve validar as credenciais.
-        try {
-            String token = authService.autenticarEGerarToken(request.getEmail(), request.getSenha());
-            // retornaria um objeto com o token JWT.
-            return ResponseEntity.ok(new AuthResponseDTO(token));
-        } catch (RuntimeException e) {
-            // Exemplo de retorno de erro de autenticação
-            return ResponseEntity.status(401).body("Credenciais inválidas.");
-        }
-    }
+    public ResponseEntity<LoginSuccessDTO> autenticar(@RequestBody @Valid LoginRequestDTO request) {
 
-    // POST /api/auth/register (Para criar novos usuários)
-    // POST /api/auth/logout
-}
+        // Chama o AuthService
+        LoginSuccessDTO response = authService.autenticar(request);
 
-
-class AuthResponseDTO {
-    public String token;
-    public AuthResponseDTO(String token) {
-        this.token = token;
+        // Retorna o status de sucesso
+        return ResponseEntity.ok(response);
     }
 }

@@ -29,7 +29,7 @@ public abstract class Usuario {
     private String email;
 
     @Column(nullable = false)
-    private String hashSenha; // Armazena a senha criptografada
+    private String senha;
 
     @Column(length = 20)
     private String telefone;

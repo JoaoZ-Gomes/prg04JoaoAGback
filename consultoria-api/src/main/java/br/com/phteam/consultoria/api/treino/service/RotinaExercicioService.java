@@ -2,17 +2,18 @@ package br.com.phteam.consultoria.api.treino.service;
 
 import br.com.phteam.consultoria.api.treino.model.RotinaExercicio;
 import br.com.phteam.consultoria.api.treino.repository.RotinaExercicioRepository;
+
+import br.com.phteam.consultoria.api.exception.RecursoNaoEncontradoException;
+
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Serviço de domínio para a gestão das rotinas de execução de exercícios dentro de uma sessão.
- */
 @Service
-public class RotinaExercicioService {
+public class RotinaExercicioService implements RotinaExercicioIService {
 
     private final RotinaExercicioRepository rotinaExercicioRepository;
 
@@ -21,30 +22,29 @@ public class RotinaExercicioService {
         this.rotinaExercicioRepository = rotinaExercicioRepository;
     }
 
-    /**
-     * Persiste a rotina de execução (séries/reps) em uma Sessão de Treino.
-     * @param rotina Objeto RotinaExercicio a ser persistido.
-     * @return RotinaExercicio salva.
-     */
+    @Override
     public RotinaExercicio salvar(RotinaExercicio rotina) {
-        // Regra de Negócio: Validar que o Exercicio e a SessaoTreino referenciados existam.
+        // Regra de Negócio (A Fazer): Validar que o Exercicio e a SessaoTreino referenciados existam.
+        // Se a validação falhar, deve lançar RegraDeNegocioException (HTTP 400).
         return rotinaExercicioRepository.save(rotina);
     }
 
+    @Override
     public Optional<RotinaExercicio> buscarPorId(Long id) {
         return rotinaExercicioRepository.findById(id);
     }
 
-    /**
-     * Recupera todas as rotinas de uma sessão específica.
-     * @param sessaoTreinoId ID da sessão de treino.
-     * @return Lista de RotinasExercicio.
-     */
+    @Override
     public List<RotinaExercicio> buscarPorSessaoId(Long sessaoTreinoId) {
         return rotinaExercicioRepository.findBySessaoTreinoId(sessaoTreinoId);
     }
 
+    @Override
     public void excluirPorId(Long id) {
+        // Verifica a existência antes de deletar e lança RecursoNaoEncontradoException (HTTP 404)
+        if (!rotinaExercicioRepository.existsById(id)) {
+            throw new RecursoNaoEncontradoException("Rotina de Exercício não encontrada com ID: " + id);
+        }
         rotinaExercicioRepository.deleteById(id);
     }
 }
