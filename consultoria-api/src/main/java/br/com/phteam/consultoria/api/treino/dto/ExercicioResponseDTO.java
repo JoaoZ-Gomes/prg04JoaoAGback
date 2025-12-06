@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class TreinoResponseDTO {
+public class ExercicioResponseDTO {
 
     private Long id;
     private Long clienteId; // ID do Cliente associado

@@ -9,6 +9,7 @@ import br.com.phteam.consultoria.api.exception.RecursoNaoEncontradoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ import java.util.List;
 public class ConsultorController {
 
     private final ConsultorService consultorService;
-    private final ObjectMapperUtil mapper; // Adicionar o Mapper
+    private final ObjectMapperUtil mapper;
 
     @Autowired
     public ConsultorController(ConsultorService consultorService, ObjectMapperUtil mapper) {
@@ -25,9 +26,9 @@ public class ConsultorController {
         this.mapper = mapper;
     }
 
-    // POST /api/consultores - Agora recebe o DTO de Requisição e retorna o DTO de Resposta
+    // POST /api/consultores - Validação Adicionada
     @PostMapping
-    public ResponseEntity<ConsultorResponseDTO> criarConsultor(@RequestBody ConsultorRequestDTO consultorRequest) {
+    public ResponseEntity<ConsultorResponseDTO> criarConsultor(@RequestBody @Valid ConsultorRequestDTO consultorRequest) { // <-- @Valid ADICIONADO AQUI
         // 1. Converte DTO -> Model
         Consultor consultor = mapper.map(consultorRequest, Consultor.class);
 
@@ -60,9 +61,9 @@ public class ConsultorController {
         return ResponseEntity.ok(response);
     }
 
-    // PUT /api/consultores/{id}
+    // PUT /api/consultores/{id} - Validação Adicionada
     @PutMapping("/{id}")
-    public ResponseEntity<ConsultorResponseDTO> atualizarConsultor(@PathVariable Long id, @RequestBody ConsultorRequestDTO detalhesConsultor) {
+    public ResponseEntity<ConsultorResponseDTO> atualizarConsultor(@PathVariable Long id, @RequestBody @Valid ConsultorRequestDTO detalhesConsultor) { // <-- @Valid ADICIONADO AQUI
         // O serviço precisa ser ajustado para receber o DTO
         // Por enquanto, vou manter a conversão aqui
         Consultor dadosAtualizados = mapper.map(detalhesConsultor, Consultor.class);

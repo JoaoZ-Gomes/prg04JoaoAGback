@@ -8,12 +8,13 @@ import br.com.phteam.consultoria.api.exception.RecursoNaoEncontradoException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // <-- NOVO IMPORT ADICIONADO
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class ExercicioService implements ExercicioIService { //
+public class ExercicioService implements ExercicioIService {
 
     private final ExercicioRepository exercicioRepository;
 
@@ -23,6 +24,7 @@ public class ExercicioService implements ExercicioIService { //
     }
 
     @Override
+    @Transactional // Garante que a operação de salvamento seja atômica
     public Exercicio salvar(Exercicio exercicio) {
         // Regra de Negócio: Valida unicidade do nome.
         if (exercicioRepository.findByNome(exercicio.getNome()).isPresent()) {
@@ -43,6 +45,7 @@ public class ExercicioService implements ExercicioIService { //
     }
 
     @Override
+    @Transactional // Garante que a operação de atualização seja atômica
     public Optional<Exercicio> atualizar(Long id, Exercicio detalhesExercicio) {
         // O Controller usará .orElseThrow() aqui para o 404
         return exercicioRepository.findById(id)
@@ -63,6 +66,7 @@ public class ExercicioService implements ExercicioIService { //
     }
 
     @Override
+    @Transactional // Garante que a operação de exclusão seja atômica
     public void excluirPorId(Long id) {
         // Verifica a existência antes de deletar e lança RecursoNaoEncontradoException (HTTP 404)
         if (!exercicioRepository.existsById(id)) {

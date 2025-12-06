@@ -5,9 +5,9 @@ import br.com.phteam.consultoria.api.treino.repository.RotinaExercicioRepository
 
 import br.com.phteam.consultoria.api.exception.RecursoNaoEncontradoException;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +23,7 @@ public class RotinaExercicioService implements RotinaExercicioIService {
     }
 
     @Override
+    @Transactional // Garante que a operação de salvamento seja atômica
     public RotinaExercicio salvar(RotinaExercicio rotina) {
         // Regra de Negócio (A Fazer): Validar que o Exercicio e a SessaoTreino referenciados existam.
         // Se a validação falhar, deve lançar RegraDeNegocioException (HTTP 400).
@@ -40,6 +41,7 @@ public class RotinaExercicioService implements RotinaExercicioIService {
     }
 
     @Override
+    @Transactional // Garante que a operação de exclusão seja atômica
     public void excluirPorId(Long id) {
         // Verifica a existência antes de deletar e lança RecursoNaoEncontradoException (HTTP 404)
         if (!rotinaExercicioRepository.existsById(id)) {

@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class TreinoRequestDTO {
+public class ExercicioRequestDTO {
 
     @NotNull(message = "O ID do cliente é obrigatório para associar o treino.")
     private Long clienteId; // ID do Cliente ao qual este treino pertence

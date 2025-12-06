@@ -2,18 +2,19 @@ package br.com.phteam.consultoria.api.cliente.service;
 
 import br.com.phteam.consultoria.api.cliente.model.Cliente;
 import br.com.phteam.consultoria.api.cliente.repository.ClienteRepository;
-// Importando as exceções personalizadas para o tratamento padronizado de erros
+
 import br.com.phteam.consultoria.api.exception.RecursoNaoEncontradoException;
 import br.com.phteam.consultoria.api.exception.RegraDeNegocioException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // <-- NOVO IMPORT ADICIONADO
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class ClienteService implements ClienteIService { // Implementa a interface ClienteIService
+public class ClienteService implements ClienteIService {
 
     private final ClienteRepository clienteRepository;
 
@@ -23,6 +24,7 @@ public class ClienteService implements ClienteIService { // Implementa a interfa
     }
 
     @Override
+    @Transactional // Garante a atomicidade da operação de salvamento
     public Cliente salvar(Cliente cliente) {
         // Lógica de Negócio: Verificar se o email já existe (lança 400 Bad Request)
         if (clienteRepository.findByEmail(cliente.getEmail()).isPresent()) {
@@ -34,6 +36,7 @@ public class ClienteService implements ClienteIService { // Implementa a interfa
     }
 
     @Override
+    // Operações de leitura podem ser deixadas sem @Transactional, ou marcadas como read-only
     public Optional<Cliente> buscarPorId(Long id) {
         return clienteRepository.findById(id);
     }
@@ -44,6 +47,7 @@ public class ClienteService implements ClienteIService { // Implementa a interfa
     }
 
     @Override
+    @Transactional // Garante a atomicidade da operação de exclusão
     public void excluirPorId(Long id) {
         // Lógica de Exceção: Verifica a existência antes de deletar (lança 404 Not Found)
         if (!clienteRepository.existsById(id)) {
@@ -56,6 +60,7 @@ public class ClienteService implements ClienteIService { // Implementa a interfa
 
     // Lógica para Atualização Parcial
     @Override
+    @Transactional // Garante a atomicidade da operação de atualização
     public Optional<Cliente> atualizar(Long id, Cliente detalhesCliente) {
 
         return clienteRepository.findById(id)
@@ -83,6 +88,6 @@ public class ClienteService implements ClienteIService { // Implementa a interfa
 
                     return clienteRepository.save(clienteExistente);
                 });
-        // O Controller lida com o Optional vazio lançando RecursoNaoEncontradoException.
+
     }
 }

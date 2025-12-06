@@ -7,6 +7,7 @@ import br.com.phteam.consultoria.api.exception.RegraDeNegocioException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // <-- NOVO IMPORT
 
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,7 @@ public class ConsultorService implements ConsultorIService {
     }
 
     @Override
+    @Transactional // Aplica transação: garante que, se houver um erro, as alterações são desfeitas.
     public Consultor salvar(Consultor consultor) {
         // Lógica de Negócio (UC-200): E-mail e CREF duplicados
         if (consultorRepository.findByEmail(consultor.getEmail()).isPresent()) {
@@ -51,6 +53,7 @@ public class ConsultorService implements ConsultorIService {
 
     // Lógica para Atualização (UC-201)
     @Override
+    @Transactional // Aplica transação
     public Optional<Consultor> atualizar(Long id, Consultor detalhesConsultor) {
         return consultorRepository.findById(id)
                 .map(consultorExistente -> {
@@ -72,6 +75,7 @@ public class ConsultorService implements ConsultorIService {
     }
 
     @Override
+    @Transactional // Aplica transação
     public boolean deletarConsultor(Long id) {
         if (!consultorRepository.existsById(id)) {
             // Lógica de Exceção: Lança 404 NOT FOUND se o recurso não existir
