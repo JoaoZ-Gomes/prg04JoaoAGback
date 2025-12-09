@@ -2,15 +2,18 @@ package br.com.phteam.consultoria.api.consultor.service;
 
 import br.com.phteam.consultoria.api.consultor.model.Consultor;
 
-import java.util.List;
+import org.springframework.data.domain.Page; // NOVO IMPORT
+import org.springframework.data.domain.Pageable; // NOVO IMPORT
+
 import java.util.Optional;
 
-// A interface é nomeada com o prefixo 'I'
+
 public interface ConsultorIService {
 
     Consultor salvar(Consultor consultor);
 
-    List<Consultor> buscarTodos();
+    // MÉTODO MODIFICADO: Agora aceita Pageable e retorna Page
+    Page<Consultor> buscarTodos(Pageable pageable);
 
     Optional<Consultor> buscarPorId(Long id);
 

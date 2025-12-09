@@ -1,17 +1,21 @@
 package br.com.phteam.consultoria.api.cliente.service;
 
 import br.com.phteam.consultoria.api.cliente.model.Cliente;
-import java.util.List;
+
+import org.springframework.data.domain.Page; // NOVO IMPORT
+import org.springframework.data.domain.Pageable; // NOVO IMPORT
+
 import java.util.Optional;
 
-// A interface é nomeada com o prefixo 'I'
+
 public interface ClienteIService {
 
     Cliente salvar(Cliente cliente);
 
     Optional<Cliente> buscarPorId(Long id);
 
-    List<Cliente> buscarTodos();
+
+    Page<Cliente> buscarTodos(Pageable pageable);
 
     void excluirPorId(Long id);
 

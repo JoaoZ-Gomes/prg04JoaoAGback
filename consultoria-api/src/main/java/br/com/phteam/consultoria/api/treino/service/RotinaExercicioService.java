@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.Optional;
 
 @Service
@@ -35,9 +37,16 @@ public class RotinaExercicioService implements RotinaExercicioIService {
         return rotinaExercicioRepository.findById(id);
     }
 
+    /**
+     * Busca rotinas de exercício de uma Sessão de Treino específica, de forma paginada.
+     * @param sessaoTreinoId ID da sessão de treino.
+     * @param pageable Parâmetros de paginação e ordenação.
+     * @return Uma página (Page) de RotinaExercicio.
+     */
     @Override
-    public List<RotinaExercicio> buscarPorSessaoId(Long sessaoTreinoId) {
-        return rotinaExercicioRepository.findBySessaoTreinoId(sessaoTreinoId);
+    public Page<RotinaExercicio> buscarPorSessaoId(Long sessaoTreinoId, Pageable pageable) {
+        // MÉTODO MODIFICADO: Delega a paginação ao Repository
+        return rotinaExercicioRepository.findBySessaoTreinoId(sessaoTreinoId, pageable);
     }
 
     @Override

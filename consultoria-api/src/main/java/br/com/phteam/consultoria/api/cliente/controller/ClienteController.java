@@ -11,6 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
+// NOVOS IMPORTS PARA PAGINAÇÃO
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+
 import java.util.List;
 
 @RestController
@@ -41,13 +46,22 @@ public class ClienteController {
         return ResponseEntity.status(201).body(response);
     }
 
-    // GET /api/clientes
+    // GET /api/clientes - AGORA COM PAGINAÇÃO
     @GetMapping
-    public ResponseEntity<List<ClienteResponseDTO>> buscarTodosClientes() {
-        List<Cliente> clientes = clienteService.buscarTodos();
-        // Converte List<Cliente> -> List<ClienteResponseDTO>
-        List<ClienteResponseDTO> responseList = mapper.mapAll(clientes, ClienteResponseDTO.class);
-        return ResponseEntity.ok(responseList);
+    public ResponseEntity<Page<ClienteResponseDTO>> buscarTodosClientes(
+            // Recebe os parâmetros page, size e sort da URL, com valores padrão
+            @PageableDefault(size = 10, page = 0, sort = "nome") Pageable pageable) {
+
+        // 1. Busca a página do Service
+        Page<Cliente> clientesPage = clienteService.buscarTodos(pageable);
+
+        // 2. Converte a Page de Model para Page de DTO
+        // O método .map() do Page faz a conversão elemento por elemento
+        Page<ClienteResponseDTO> responsePage = clientesPage.map(cliente ->
+                mapper.map(cliente, ClienteResponseDTO.class)
+        );
+
+        return ResponseEntity.ok(responsePage);
     }
 
     // GET /api/clientes/{id} - Lança 404 via Handler

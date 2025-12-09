@@ -5,11 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
-import java.util.List;
+import java.util.List; // Mantido por causa do findByEspecializacao
 
 /**
  * Interface Repository para a entidade Consultor.
- * Estende JpaRepository para herdar os métodos CRUD.
+ * Estende JpaRepository para herdar os métodos CRUD, incluindo findAll(Pageable).
  */
 @Repository
 public interface ConsultorRepository extends JpaRepository<Consultor, Long> {

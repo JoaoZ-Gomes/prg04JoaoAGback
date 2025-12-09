@@ -1,7 +1,10 @@
 package br.com.phteam.consultoria.api.treino.service;
 
 import br.com.phteam.consultoria.api.treino.model.Exercicio;
-import java.util.List;
+
+import org.springframework.data.domain.Page; // NOVO IMPORT
+import org.springframework.data.domain.Pageable; // NOVO IMPORT
+
 import java.util.Optional;
 
 public interface ExercicioIService {
@@ -10,7 +13,8 @@ public interface ExercicioIService {
 
     Optional<Exercicio> buscarPorId(Long id);
 
-    List<Exercicio> buscarTodos();
+    // MÉTODO MODIFICADO: Agora aceita Pageable e retorna Page
+    Page<Exercicio> buscarTodos(Pageable pageable);
 
     Optional<Exercicio> atualizar(Long id, Exercicio detalhesExercicio);
 

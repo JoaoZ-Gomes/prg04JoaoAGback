@@ -6,10 +6,11 @@ import br.com.phteam.consultoria.api.exception.RecursoNaoEncontradoException;
 import br.com.phteam.consultoria.api.exception.RegraDeNegocioException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page; // NOVO IMPORT: Para retornar a página de dados
+import org.springframework.data.domain.Pageable; // NOVO IMPORT: Para receber os parâmetros de paginação
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // <-- NOVO IMPORT
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -27,14 +28,14 @@ public class ConsultorService implements ConsultorIService {
     }
 
     @Override
-    @Transactional // Aplica transação: garante que, se houver um erro, as alterações são desfeitas.
+    @Transactional
     public Consultor salvar(Consultor consultor) {
         // Lógica de Negócio (UC-200): E-mail e CREF duplicados
         if (consultorRepository.findByEmail(consultor.getEmail()).isPresent()) {
-            throw new RegraDeNegocioException("E-mail já cadastrado."); // Lança 400
+            throw new RegraDeNegocioException("E-mail já cadastrado.");
         }
         if (consultorRepository.findByNumeroCref(consultor.getNumeroCref()).isPresent()) {
-            throw new RegraDeNegocioException("CREF já cadastrado."); // Lança 400
+            throw new RegraDeNegocioException("CREF já cadastrado.");
         }
 
         // **A Fazer:** Aplicar criptografia na senha.
@@ -47,13 +48,16 @@ public class ConsultorService implements ConsultorIService {
     }
 
     @Override
-    public List<Consultor> buscarTodos() {
-        return consultorRepository.findAll();
+    // MÉTODO ALTERADO PARA USAR PAGINAÇÃO:
+    public Page<Consultor> buscarTodos(Pageable pageable) {
+        // Chama o método nativo do JpaRepository que aceita Pageable
+        return consultorRepository.findAll(pageable);
     }
+    // OBS: O método original List<Consultor> buscarTodos() foi substituído.
 
     // Lógica para Atualização (UC-201)
     @Override
-    @Transactional // Aplica transação
+    @Transactional
     public Optional<Consultor> atualizar(Long id, Consultor detalhesConsultor) {
         return consultorRepository.findById(id)
                 .map(consultorExistente -> {
@@ -71,11 +75,10 @@ public class ConsultorService implements ConsultorIService {
 
                     return consultorRepository.save(consultorExistente);
                 });
-        // O Controller lida com o Optional vazio lançando a RecursoNaoEncontradoException (404).
     }
 
     @Override
-    @Transactional // Aplica transação
+    @Transactional
     public boolean deletarConsultor(Long id) {
         if (!consultorRepository.existsById(id)) {
             // Lógica de Exceção: Lança 404 NOT FOUND se o recurso não existir

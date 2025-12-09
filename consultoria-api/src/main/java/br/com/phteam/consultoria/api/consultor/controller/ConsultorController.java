@@ -11,6 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+
 import java.util.List;
 
 @RestController
@@ -41,13 +46,22 @@ public class ConsultorController {
         return ResponseEntity.status(201).body(response);
     }
 
-    // GET /api/consultores
+    // GET /api/consultores - AGORA COM PAGINAÇÃO
     @GetMapping
-    public ResponseEntity<List<ConsultorResponseDTO>> buscarTodosConsultores() {
-        List<Consultor> consultores = consultorService.buscarTodos();
-        // Converte List<Consultor> -> List<ConsultorResponseDTO>
-        List<ConsultorResponseDTO> responseList = mapper.mapAll(consultores, ConsultorResponseDTO.class);
-        return ResponseEntity.ok(responseList);
+    public ResponseEntity<Page<ConsultorResponseDTO>> buscarTodosConsultores(
+            // Recebe os parâmetros page, size e sort da URL, com valores padrão
+            @PageableDefault(size = 10, page = 0, sort = "nome") Pageable pageable) {
+
+        // 1. Busca a página do Service
+        Page<Consultor> consultoresPage = consultorService.buscarTodos(pageable);
+
+        // 2. Converte a Page de Model para Page de DTO
+        // O método .map() do Page faz a conversão elemento por elemento
+        Page<ConsultorResponseDTO> responsePage = consultoresPage.map(consultor ->
+                mapper.map(consultor, ConsultorResponseDTO.class)
+        );
+
+        return ResponseEntity.ok(responsePage);
     }
 
     // GET /api/consultores/{id}

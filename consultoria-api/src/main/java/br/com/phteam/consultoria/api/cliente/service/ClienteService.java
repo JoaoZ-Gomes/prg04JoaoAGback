@@ -8,9 +8,11 @@ import br.com.phteam.consultoria.api.exception.RegraDeNegocioException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // <-- NOVO IMPORT ADICIONADO
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.Optional;
 
 @Service
@@ -41,9 +43,15 @@ public class ClienteService implements ClienteIService {
         return clienteRepository.findById(id);
     }
 
+    /**
+     * Busca todos os clientes de forma paginada.
+     * @param pageable Objeto Pageable contendo informações de página, tamanho e ordenação.
+     * @return Uma página (Page) de clientes.
+     */
     @Override
-    public List<Cliente> buscarTodos() {
-        return clienteRepository.findAll();
+    public Page<Cliente> buscarTodos(Pageable pageable) {
+        // O JpaRepository fornece a implementação nativa de findAll(Pageable)
+        return clienteRepository.findAll(pageable);
     }
 
     @Override

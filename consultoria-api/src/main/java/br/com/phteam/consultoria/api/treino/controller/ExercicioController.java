@@ -11,6 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
+// NOVOS IMPORTS PARA PAGINAÇÃO
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+
 import java.util.List;
 
 @RestController
@@ -41,13 +46,22 @@ public class ExercicioController {
         return ResponseEntity.status(201).body(response);
     }
 
-    // GET /api/exercicios
+    // GET /api/exercicios - AGORA COM PAGINAÇÃO
     @GetMapping
-    public ResponseEntity<List<ExercicioResponseDTO>> buscarTodosExercicios() {
-        List<Exercicio> exercicios = exercicioService.buscarTodos();
-        // Converte List<Exercicio> -> List<ExercicioResponseDTO>
-        List<ExercicioResponseDTO> responseList = mapper.mapAll(exercicios, ExercicioResponseDTO.class);
-        return ResponseEntity.ok(responseList);
+    public ResponseEntity<Page<ExercicioResponseDTO>> buscarTodosExercicios(
+            // Recebe os parâmetros page, size e sort da URL, com valores padrão
+            @PageableDefault(size = 10, page = 0, sort = "nome") Pageable pageable) {
+
+        // 1. Busca a página do Service
+        Page<Exercicio> exerciciosPage = exercicioService.buscarTodos(pageable);
+
+        // 2. Converte a Page de Model para Page de DTO
+        // O método .map() do Page faz a conversão elemento por elemento
+        Page<ExercicioResponseDTO> responsePage = exerciciosPage.map(exercicio ->
+                mapper.map(exercicio, ExercicioResponseDTO.class)
+        );
+
+        return ResponseEntity.ok(responsePage);
     }
 
     // GET /api/exercicios/{id} - Lança 404 via Handler

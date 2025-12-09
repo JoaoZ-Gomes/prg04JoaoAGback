@@ -8,7 +8,10 @@ import br.com.phteam.consultoria.api.exception.RecursoNaoEncontradoException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // <-- NOVO IMPORT ADICIONADO
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,8 +43,10 @@ public class ExercicioService implements ExercicioIService {
     }
 
     @Override
-    public List<Exercicio> buscarTodos() {
-        return exercicioRepository.findAll();
+    // MÉTODO MODIFICADO: Agora aceita Pageable e retorna Page
+    public Page<Exercicio> buscarTodos(Pageable pageable) {
+        // Delega a paginação ao JpaRepository
+        return exercicioRepository.findAll(pageable);
     }
 
     @Override
