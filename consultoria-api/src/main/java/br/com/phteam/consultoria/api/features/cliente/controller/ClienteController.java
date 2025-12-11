@@ -6,22 +6,21 @@ import br.com.phteam.consultoria.api.features.cliente.model.Cliente;
 import br.com.phteam.consultoria.api.features.cliente.service.ClienteService;
 import br.com.phteam.consultoria.api.infrastructure.exception.RecursoNaoEncontradoException;
 import br.com.phteam.consultoria.api.infrastructure.mapper.ObjectMapperUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
-// NOVOS IMPORTS PARA PAGINAÇÃO
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/clientes")
 public class ClienteController {
 
     private final ClienteService clienteService;
-    private final ObjectMapperUtil mapper; // Adicionar o Mapper
+    private final ObjectMapperUtil mapper;
 
     @Autowired
     public ClienteController(ClienteService clienteService, ObjectMapperUtil mapper) {
@@ -29,73 +28,75 @@ public class ClienteController {
         this.mapper = mapper;
     }
 
-    // POST /api/clientes - Usa DTO e Ativa Validação
+    // ---------------------------
+    // POST /api/clientes
+    // ---------------------------
     @PostMapping
-    public ResponseEntity<ClienteResponseDTO> criarCliente(@RequestBody @Valid ClienteRequestDTO clienteRequest) {
-        // 1. Converte DTO -> Model
-        Cliente cliente = mapper.map(clienteRequest, Cliente.class);
+    public ResponseEntity<ClienteResponseDTO> criarCliente(
+            @RequestBody @Valid ClienteRequestDTO clienteRequest) {
 
-        // 2. Salva no Service
+        Cliente cliente = mapper.map(clienteRequest, Cliente.class);
         Cliente clienteSalvo = clienteService.salvar(cliente);
 
-        // 3. Converte Model -> DTO de Resposta
-        ClienteResponseDTO response = mapper.map(clienteSalvo, ClienteResponseDTO.class);
-
-        return ResponseEntity.status(201).body(response);
+        return ResponseEntity
+                .status(201)
+                .body(mapper.map(clienteSalvo, ClienteResponseDTO.class));
     }
 
-    // GET /api/clientes - AGORA COM PAGINAÇÃO
+    // ---------------------------
+    // GET /api/clientes (paginado)
+    // ---------------------------
     @GetMapping
     public ResponseEntity<Page<ClienteResponseDTO>> buscarTodosClientes(
-            // Recebe os parâmetros page, size e sort da URL, com valores padrão
-            @PageableDefault(size = 10, page = 0, sort = "nome") Pageable pageable) {
+            @PageableDefault(size = 10, sort = "nome") Pageable pageable) {
 
-        // 1. Busca a página do Service
-        Page<Cliente> clientesPage = clienteService.buscarTodos(pageable);
+        Page<Cliente> pagina = clienteService.buscarTodos(pageable);
 
-        // 2. Converte a Page de Model para Page de DTO
-        // O método .map() do Page faz a conversão elemento por elemento
-        Page<ClienteResponseDTO> responsePage = clientesPage.map(cliente ->
-                mapper.map(cliente, ClienteResponseDTO.class)
-        );
+        Page<ClienteResponseDTO> paginaDTO =
+                pagina.map(c -> mapper.map(c, ClienteResponseDTO.class));
 
-        return ResponseEntity.ok(responsePage);
+        return ResponseEntity.ok(paginaDTO);
     }
 
-    // GET /api/clientes/{id} - Lança 404 via Handler
+    // ---------------------------
+    // GET /api/clientes/{id}
+    // ---------------------------
     @GetMapping("/{id}")
     public ResponseEntity<ClienteResponseDTO> buscarClientePorId(@PathVariable Long id) {
-        Cliente cliente = clienteService.buscarPorId(id)
-                // Lança a exceção que o ErrorHandler captura e transforma em 404
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado com ID: " + id));
 
-        // Converte Model -> DTO de Resposta
-        ClienteResponseDTO response = mapper.map(cliente, ClienteResponseDTO.class);
-        return ResponseEntity.ok(response);
+        Cliente cliente = clienteService.buscarPorId(id)
+                .orElseThrow(() ->
+                        new RecursoNaoEncontradoException("Cliente não encontrado com ID: " + id)
+                );
+
+        return ResponseEntity.ok(mapper.map(cliente, ClienteResponseDTO.class));
     }
 
-    // PUT /api/clientes/{id} - Usa DTO, Ativa Validação e Lança 404 via Handler
+    // ---------------------------
+    // PUT /api/clientes/{id}
+    // ---------------------------
     @PutMapping("/{id}")
-    public ResponseEntity<ClienteResponseDTO> atualizarCliente(@PathVariable Long id, @RequestBody @Valid ClienteRequestDTO detalhesCliente) {
-        // 1. Converte DTO -> Model
+    public ResponseEntity<ClienteResponseDTO> atualizarCliente(
+            @PathVariable Long id,
+            @RequestBody @Valid ClienteRequestDTO detalhesCliente) {
+
         Cliente dadosAtualizados = mapper.map(detalhesCliente, Cliente.class);
 
-        Cliente clienteAtualizado = clienteService.atualizar(id, dadosAtualizados)
-                // Lança a exceção que o ErrorHandler captura e transforma em 404
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado para atualização com ID: " + id));
+        Cliente atualizado = clienteService.atualizar(id, dadosAtualizados)
+                .orElseThrow(() ->
+                        new RecursoNaoEncontradoException("Cliente não encontrado para atualização com ID: " + id)
+                );
 
-        // Converte Model -> DTO de Resposta
-        ClienteResponseDTO response = mapper.map(clienteAtualizado, ClienteResponseDTO.class);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(mapper.map(atualizado, ClienteResponseDTO.class));
     }
 
+    // ---------------------------
     // DELETE /api/clientes/{id}
+    // ---------------------------
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> excluirCliente(@PathVariable Long id) {
-        // O ClienteService já lança RecursoNaoEncontradoException, então a chamada direta é o suficiente:
-        clienteService.excluirPorId(id);
 
-        // Se a linha acima for bem-sucedida, retorna 204 No Content
+        clienteService.excluirPorId(id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -14,12 +14,12 @@ import java.util.List;
 @Repository
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 
-    // Método customizado para buscar um cliente pelo email (útil para login e Auth Service)
+    // Buscar um cliente pelo email
     Optional<Cliente> findByEmail(String email);
 
-    // Método customizado para buscar todos os clientes de um consultor específico (relacionamento)
+    // Buscar todos os clientes vinculados a um consultor (campo consultorId no Cliente)
     List<Cliente> findByConsultorId(Long consultorId);
 
-    // Método customizado para buscar clientes por objetivo (e.g., "Hipertrofia")
+    // Buscar clientes pelo objetivo (ex: hipertrofia, emagrecimento)
     List<Cliente> findByObjetivo(String objetivo);
 }
