@@ -8,7 +8,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class LoginSuccessDTO {
-    private String status;
+
+    private String token;
     private String email;
     private String tipoUsuario;
 }
