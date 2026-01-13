@@ -20,6 +20,7 @@ import java.util.function.Function;
 @Service
 public class JwtTokenService {
 
+
     // Tempo de validade do token: 10 horas (em milissegundos)
     // OBS: Você pode mudar para injetar do application.properties, mas mantive o valor fixo da sua fonte.
     private static final long EXPIRATION_TIME_MS = 10 * 60 * 60 * 1000;

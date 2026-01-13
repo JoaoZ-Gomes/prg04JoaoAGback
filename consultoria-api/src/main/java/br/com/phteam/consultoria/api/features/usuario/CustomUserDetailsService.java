@@ -1,4 +1,5 @@
-package br.com.phteam.consultoria.api.features.usuario.service;
+package br.com.phteam.consultoria.api.features.usuario;
+
 
 import br.com.phteam.consultoria.api.features.cliente.model.Cliente;
 import br.com.phteam.consultoria.api.features.cliente.repository.ClienteRepository;
