@@ -2,6 +2,7 @@ package br.com.phteam.consultoria.api.features.cliente.controller;
 
 import br.com.phteam.consultoria.api.features.cliente.dto.ClienteRequestDTO;
 import br.com.phteam.consultoria.api.features.cliente.dto.ClienteResponseDTO;
+import br.com.phteam.consultoria.api.features.cliente.dto.ClienteUpdateDTO;
 import br.com.phteam.consultoria.api.features.cliente.model.Cliente;
 import br.com.phteam.consultoria.api.features.cliente.service.ClienteService;
 import br.com.phteam.consultoria.api.infrastructure.exception.RecursoNaoEncontradoException;
@@ -71,14 +72,16 @@ public class ClienteController {
     // ---------------------------
     @PutMapping("/{id}")
     public ResponseEntity<ClienteResponseDTO> atualizarCliente(
-            @PathVariable Long id,
-            @RequestBody @Valid ClienteRequestDTO detalhesCliente) {
+            @PathVariable("id") Long id,
+            @RequestBody @Valid ClienteUpdateDTO dto) {
 
-        Cliente dadosAtualizados = mapper.map(detalhesCliente, Cliente.class);
+        Cliente dadosAtualizados = mapper.map(dto, Cliente.class);
 
         Cliente atualizado = clienteService.atualizar(id, dadosAtualizados)
                 .orElseThrow(() ->
-                        new RecursoNaoEncontradoException("Cliente não encontrado para atualização com ID: " + id)
+                        new RecursoNaoEncontradoException(
+                                "Cliente não encontrado para atualização com ID: " + id
+                        )
                 );
 
         return ResponseEntity.ok(mapper.map(atualizado, ClienteResponseDTO.class));
