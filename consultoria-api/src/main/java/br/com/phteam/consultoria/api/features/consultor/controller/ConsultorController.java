@@ -1,21 +1,29 @@
 package br.com.phteam.consultoria.api.features.consultor.controller;
 
-import br.com.phteam.consultoria.api.infrastructure.mapper.ObjectMapperUtil;
+import br.com.phteam.consultoria.api.features.cliente.model.Cliente;
 import br.com.phteam.consultoria.api.features.consultor.dto.ConsultorRequestDTO;
 import br.com.phteam.consultoria.api.features.consultor.dto.ConsultorResponseDTO;
 import br.com.phteam.consultoria.api.features.consultor.model.Consultor;
 import br.com.phteam.consultoria.api.features.consultor.service.ConsultorService;
 import br.com.phteam.consultoria.api.infrastructure.exception.RecursoNaoEncontradoException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import br.com.phteam.consultoria.api.infrastructure.mapper.ObjectMapperUtil;
+
 import jakarta.validation.Valid;
 
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
+/**
+ * Controller responsável pelas operações relacionadas aos Consultores.
+ */
 @RestController
 @RequestMapping("/api/consultores")
 public class ConsultorController {
@@ -29,75 +37,121 @@ public class ConsultorController {
         this.mapper = mapper;
     }
 
-    // POST /api/consultores - Validação Adicionada
+    // =====================================================
+    // CREATE
+    // =====================================================
+
+    /**
+     * Cria um novo consultor.
+     */
     @PostMapping
-    public ResponseEntity<ConsultorResponseDTO> criarConsultor(@RequestBody @Valid ConsultorRequestDTO consultorRequest) { // <-- @Valid ADICIONADO AQUI
-        // 1. Converte DTO -> Model
+    public ResponseEntity<ConsultorResponseDTO> criarConsultor(
+            @RequestBody @Valid ConsultorRequestDTO consultorRequest
+    ) {
         Consultor consultor = mapper.map(consultorRequest, Consultor.class);
-
-        // 2. Salva no Service (a lógica de criptografia de senha deve estar aqui)
         Consultor consultorSalvo = consultorService.salvar(consultor);
-
-        // 3. Converte Model -> DTO de Resposta
         ConsultorResponseDTO response = mapper.map(consultorSalvo, ConsultorResponseDTO.class);
 
         return ResponseEntity.status(201).body(response);
     }
 
-    // GET /api/consultores - AGORA COM PAGINAÇÃO
+    // =====================================================
+    // READ
+    // =====================================================
+
+    /**
+     * Lista todos os consultores com paginação.
+     */
     @GetMapping
     public ResponseEntity<Page<ConsultorResponseDTO>> buscarTodosConsultores(
-            // Recebe os parâmetros page, size e sort da URL, com valores padrão
-            @PageableDefault(size = 10, page = 0, sort = "nome") Pageable pageable) {
+            @PageableDefault(size = 10, page = 0, sort = "nome") Pageable pageable
+    ) {
+        Page<Consultor> consultores = consultorService.buscarTodos(pageable);
 
-        // 1. Busca a página do Service
-        Page<Consultor> consultoresPage = consultorService.buscarTodos(pageable);
-
-        // 2. Converte a Page de Model para Page de DTO
-        // O método .map() do Page faz a conversão elemento por elemento
-        Page<ConsultorResponseDTO> responsePage = consultoresPage.map(consultor ->
-                mapper.map(consultor, ConsultorResponseDTO.class)
+        Page<ConsultorResponseDTO> response = consultores.map(
+                consultor -> mapper.map(consultor, ConsultorResponseDTO.class)
         );
 
-        return ResponseEntity.ok(responsePage);
+        return ResponseEntity.ok(response);
     }
 
-    // GET /api/consultores/{id}
+    /**
+     * Busca um consultor por ID.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<ConsultorResponseDTO> buscarConsultorPorId(@PathVariable Long id) {
-        Consultor consultor = consultorService.buscarPorId(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Consultor não encontrado com ID: " + id));
 
-        // Converte Model -> DTO de Resposta
+        Consultor consultor = consultorService.buscarPorId(id)
+                .orElseThrow(() ->
+                        new RecursoNaoEncontradoException("Consultor não encontrado com ID: " + id)
+                );
+
         ConsultorResponseDTO response = mapper.map(consultor, ConsultorResponseDTO.class);
         return ResponseEntity.ok(response);
     }
 
-    // PUT /api/consultores/{id} - Validação Adicionada
+    // =====================================================
+    // ENDPOINT PRINCIPAL DO DASHBOARD DO CONSULTOR
+    // =====================================================
+
+    /**
+     * Retorna os clientes vinculados ao consultor LOGADO.
+     * Apenas usuários com ROLE_CONSULTOR podem acessar.
+     */
+    @GetMapping("/meus-clientes")
+    @PreAuthorize("hasRole('CONSULTOR')")
+    public List<Cliente> buscarMeusClientes(Authentication authentication) {
+
+        // Email vem diretamente do JWT (subject)
+        String emailConsultor = authentication.getName();
+
+        // 🔥 DEBUG (pode remover depois)
+        System.out.println("🔥 CONSULTOR LOGADO: " + emailConsultor);
+        authentication.getAuthorities()
+                .forEach(a -> System.out.println("🔥 ROLE: " + a.getAuthority()));
+
+        return consultorService.buscarClientesDoConsultor(emailConsultor);
+    }
+
+    // =====================================================
+    // UPDATE
+    // =====================================================
+
+    /**
+     * Atualiza os dados de um consultor.
+     */
     @PutMapping("/{id}")
-    public ResponseEntity<ConsultorResponseDTO> atualizarConsultor(@PathVariable Long id, @RequestBody @Valid ConsultorRequestDTO detalhesConsultor) { // <-- @Valid ADICIONADO AQUI
-        // O serviço precisa ser ajustado para receber o DTO
-        // Por enquanto, vou manter a conversão aqui
+    public ResponseEntity<ConsultorResponseDTO> atualizarConsultor(
+            @PathVariable Long id,
+            @RequestBody @Valid ConsultorRequestDTO detalhesConsultor
+    ) {
         Consultor dadosAtualizados = mapper.map(detalhesConsultor, Consultor.class);
 
         Consultor consultorAtualizado = consultorService.atualizar(id, dadosAtualizados)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Consultor não encontrado para atualização com ID: " + id));
+                .orElseThrow(() ->
+                        new RecursoNaoEncontradoException("Consultor não encontrado para atualização com ID: " + id)
+                );
 
-        // Converte Model -> DTO de Resposta
         ConsultorResponseDTO response = mapper.map(consultorAtualizado, ConsultorResponseDTO.class);
         return ResponseEntity.ok(response);
     }
 
-    // DELETE /api/consultores/{id}
+    // =====================================================
+    // DELETE
+    // =====================================================
+
+    /**
+     * Deleta um consultor pelo ID.
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarConsultor(@PathVariable Long id) {
-        // Supondo que o serviço lança RecursoNaoEncontradoException se o ID não existir
-        // Caso contrário, você deve lançar a exceção aqui.
+
         if (consultorService.deletarConsultor(id)) {
             return ResponseEntity.noContent().build();
-        } else {
-            // Lança a exceção de Recurso Não Encontrado se não deletar
-            throw new RecursoNaoEncontradoException("Consultor não encontrado para exclusão com ID: " + id);
         }
+
+        throw new RecursoNaoEncontradoException(
+                "Consultor não encontrado para exclusão com ID: " + id
+        );
     }
 }

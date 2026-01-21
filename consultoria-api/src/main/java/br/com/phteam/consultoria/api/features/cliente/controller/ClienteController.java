@@ -7,26 +7,21 @@ import br.com.phteam.consultoria.api.features.cliente.service.ClienteService;
 import br.com.phteam.consultoria.api.infrastructure.exception.RecursoNaoEncontradoException;
 import br.com.phteam.consultoria.api.infrastructure.mapper.ObjectMapperUtil;
 import jakarta.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/clientes")
+@RequiredArgsConstructor
 public class ClienteController {
 
     private final ClienteService clienteService;
     private final ObjectMapperUtil mapper;
-
-    @Autowired
-    public ClienteController(ClienteService clienteService, ObjectMapperUtil mapper) {
-        this.clienteService = clienteService;
-        this.mapper = mapper;
-    }
 
     // ---------------------------
     // POST /api/clientes
@@ -51,7 +46,6 @@ public class ClienteController {
             @PageableDefault(size = 10, sort = "nome") Pageable pageable) {
 
         Page<Cliente> pagina = clienteService.buscarTodos(pageable);
-
         Page<ClienteResponseDTO> paginaDTO =
                 pagina.map(c -> mapper.map(c, ClienteResponseDTO.class));
 
@@ -98,5 +92,21 @@ public class ClienteController {
 
         clienteService.excluirPorId(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ---------------------------
+    // GET /api/clientes/meu-perfil
+    // ---------------------------
+    @GetMapping("/meu-perfil")
+    public ResponseEntity<ClienteResponseDTO> meuPerfil(Authentication authentication) {
+        // pega o email do cliente logado via JWT
+        String email = authentication.getName();
+
+        Cliente cliente = clienteService.findByEmail(email)
+                .orElseThrow(() ->
+                        new RecursoNaoEncontradoException("Cliente não encontrado para email: " + email)
+                );
+
+        return ResponseEntity.ok(mapper.map(cliente, ClienteResponseDTO.class));
     }
 }

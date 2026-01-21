@@ -64,6 +64,5 @@ public class Cliente extends Usuario {
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Avaliacao> avaliacoes;
 
-    // Observação:
-    // A relação 1:1 com Assinatura pode ser adicionada futuramente, se necessário.
+
 }

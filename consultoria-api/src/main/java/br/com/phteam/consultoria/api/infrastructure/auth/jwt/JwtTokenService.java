@@ -6,6 +6,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -14,75 +15,81 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.function.Function;
 
-/**
- * Serviço responsável por toda a manipulação do Token JWT para a API de Consultoria.
- */
 @Service
 public class JwtTokenService {
 
-
-    // Tempo de validade do token: 10 horas (em milissegundos)
-    // OBS: Você pode mudar para injetar do application.properties, mas mantive o valor fixo da sua fonte.
+    // 10 horas
     private static final long EXPIRATION_TIME_MS = 10 * 60 * 60 * 1000;
 
-    /**
-     * Chave secreta injetada do application.properties.
-     * OBS: O nome da propriedade deve ser 'api.security.token.secret' no seu properties.
-     */
     @Value("${api.security.token.secret}")
     private String secretKey;
 
-    // --- Geração do Token ---
+    /* =====================================================
+       GERAÇÃO DO TOKEN
+       ===================================================== */
 
     public String generateToken(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return generateToken(userDetails.getUsername());
-    }
 
-    public String generateToken(String username) {
+        // Pega a role (ROLE_CLIENTE ou ROLE_CONSULTOR)
+        String role = userDetails.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Usuário sem role"));
+
         return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setSubject(userDetails.getUsername()) // email
+                .claim("role", role)
+                .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME_MS))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // --- Validação e extração de dados do Token ---
+    /* =====================================================
+       EXTRAÇÃO DE DADOS
+       ===================================================== */
 
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
     }
 
-    public boolean validateToken(String token, UserDetails userDetails) {
-        final String username = getUsernameFromToken(token);
-
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    public String getRoleFromToken(String token) {
+        return getClaimFromToken(token, claims -> claims.get("role", String.class));
     }
 
-    // --- Métodos auxiliares ---
+    public boolean validateToken(String token, UserDetails userDetails) {
+        String username = getUsernameFromToken(token);
+        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    }
+
+    /* =====================================================
+       MÉTODOS AUXILIARES
+       ===================================================== */
 
     private SecretKey getSigningKey() {
-        if (secretKey == null || secretKey.isEmpty()) {
-            throw new IllegalStateException("A chave secreta JWT não está configurada!");
+        if (secretKey == null || secretKey.length() < 32) {
+            throw new IllegalStateException(
+                    "A chave JWT deve ter no mínimo 32 caracteres (256 bits)"
+            );
         }
-        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
 
-        // Na versão 0.11.5, o tamanho da chave pode ser um fator. Mantenha 256 bits (32 bytes)
+        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    private <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = Jwts.parser()
+    private <T> T getClaimFromToken(String token, Function<Claims, T> resolver) {
+        Claims claims = Jwts.parser()
                 .setSigningKey(getSigningKey())
                 .parseClaimsJws(token)
                 .getBody();
 
-        return claimsResolver.apply(claims);
+        return resolver.apply(claims);
     }
 
     private boolean isTokenExpired(String token) {
-        final Date expiration = getClaimFromToken(token, Claims::getExpiration);
+        Date expiration = getClaimFromToken(token, Claims::getExpiration);
         return expiration.before(new Date());
     }
 }

@@ -22,4 +22,6 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 
     // Buscar clientes pelo objetivo (ex: hipertrofia, emagrecimento)
     List<Cliente> findByObjetivo(String objetivo);
+
+
 }

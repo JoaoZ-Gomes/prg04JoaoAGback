@@ -93,6 +93,11 @@ public class ClienteService implements ClienteIService {
         clienteRepository.deleteById(id);
     }
 
+    @Transactional(readOnly = true)
+    public Optional<Cliente> findByEmail(String email) {
+        return clienteRepository.findByEmail(email);
+    }
+
     /**
      * Atualiza um cliente existente com os detalhes fornecidos (atualização parcial/PATCH).
      * Campos nulos nos detalhesCliente são ignorados.
@@ -100,6 +105,8 @@ public class ClienteService implements ClienteIService {
      * @param detalhesCliente O objeto com os dados de atualização.
      * @return Um Optional contendo o cliente atualizado, se encontrado.
      */
+
+
     @Override
     @Transactional
     public Optional<Cliente> atualizar(Long id, Cliente detalhesCliente) {

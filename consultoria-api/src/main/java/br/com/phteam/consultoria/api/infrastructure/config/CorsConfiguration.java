@@ -4,24 +4,22 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/**
- * Configuração CORS (Cross-Origin Resource Sharing) para permitir que o frontend
- * acesse a API REST que roda em uma porta diferente.
- */
 @Configuration
 public class CorsConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        // Aplica a configuração a todos os endpoints da API (/**)
         registry.addMapping("/**")
-                // Permite requisições originadas do seu frontend (Vite)
-                .allowedOrigins("http://localhost:3000")
+                // Permite qualquer porta do localhost
+                .allowedOriginPatterns("http://localhost:*")
 
-                // Define os métodos HTTP que são permitidos
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "TRACE", "CONNECT")
+                // Permite todos os métodos HTTP comuns
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
 
-                // Permite o envio de credenciais
-                .allowCredentials(true);
+                // Permite envio de cookies/token se necessário
+                .allowCredentials(true)
+
+                // Permite qualquer header
+                .allowedHeaders("*");
     }
 }
