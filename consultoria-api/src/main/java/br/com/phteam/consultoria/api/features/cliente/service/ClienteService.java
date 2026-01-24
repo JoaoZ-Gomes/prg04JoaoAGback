@@ -80,18 +80,19 @@ public class ClienteService implements ClienteIService {
                         clienteExistente.setObjetivo(detalhesCliente.getObjetivo());
                     }
 
-                    // ✔ Numéricos (SEM comparação com 0.0)
+                    // ✔ Numéricos
                     if (detalhesCliente.getPesoAtual() > 0) {
                         clienteExistente.setPesoAtual(detalhesCliente.getPesoAtual());
                     }
 
-                    if (detalhesCliente.getPesoAtual() > 0) {
-                        clienteExistente.setPesoAtual(detalhesCliente.getPesoAtual());
+                    if (detalhesCliente.getAltura() > 0) {
+                        clienteExistente.setAltura(detalhesCliente.getAltura());
                     }
 
                     return clienteRepository.save(clienteExistente);
                 });
     }
+
 
     // -------------------- DELETE --------------------
     @Override
