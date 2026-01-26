@@ -7,4 +7,7 @@ COPY . .
 RUN chmod +x mvnw
 RUN ./mvnw clean package -DskipTests
 
-CMD ["java", "-jar", "target/*.jar"]
+
+RUN JAR_FILE=$(ls target/*.jar | head -n 1) && mv "$JAR_FILE" app.jar
+
+CMD ["java", "-jar", "app.jar"]
