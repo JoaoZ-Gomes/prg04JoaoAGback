@@ -69,9 +69,8 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/consultores/**")
                         .hasRole("CONSULTOR")
 
-                        // 🔒 ADMIN
-                        .requestMatchers(HttpMethod.POST, "/api/clientes")
-                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/api/clientes").permitAll()
 
                         // 🔐 Qualquer outra precisa autenticação
                         .anyRequest().authenticated()

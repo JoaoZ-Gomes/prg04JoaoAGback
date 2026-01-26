@@ -16,5 +16,7 @@ public class ClienteResponseDTO {
     private String rg;
     private LocalDate dataNascimento;
     private String telefone;
+    private Double pesoAtual;
+    private Double altura;
 
 }
