@@ -5,8 +5,10 @@ import br.com.phteam.consultoria.api.features.consultor.model.Consultor;
 import br.com.phteam.consultoria.api.features.consultor.repository.ConsultorRepository;
 import br.com.phteam.consultoria.api.infrastructure.exception.RecursoNaoEncontradoException;
 import br.com.phteam.consultoria.api.infrastructure.exception.RegraDeNegocioException;
+import br.com.phteam.consultoria.api.features.consultor.model.Consultor;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,14 +18,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ConsultorService implements ConsultorIService {
 
     private final ConsultorRepository consultorRepository;
-
-    @Autowired
-    public ConsultorService(ConsultorRepository consultorRepository) {
-        this.consultorRepository = consultorRepository;
-    }
 
     // =====================================================
     // CREATE
@@ -54,23 +52,35 @@ public class ConsultorService implements ConsultorIService {
     }
 
     @Override
+    public Optional<Consultor> buscarPorEmail(String email) {
+        return consultorRepository.findByEmail(email);
+    }
+
+    @Override
     public Page<Consultor> buscarTodos(Pageable pageable) {
         return consultorRepository.findAll(pageable);
     }
+    @Override
+    public List<Cliente> buscarClientesDoConsultorPorId(Long consultorId) {
+        Consultor consultor = consultorRepository.findById(consultorId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException(
+                        "Consultor não encontrado com ID: " + consultorId
+                ));
+        return consultor.getClientes();
+    }
+
 
     // =====================================================
-    // DASHBOARD DO CONSULTOR
+    // DASHBOARD DO CONSULTOR (PEGA DO TOKEN → EMAIL)
     // =====================================================
 
-    /**
-     * Retorna os clientes vinculados ao consultor logado (via email do JWT)
-     */
-    public List<Cliente> buscarClientesDoConsultor(String emailConsultor) {
+    @Override
+    public List<Cliente> buscarClientesDoConsultor(String email) {
 
-        Consultor consultor = consultorRepository.findByEmail(emailConsultor)
+        Consultor consultor = consultorRepository.findByEmail(email)
                 .orElseThrow(() ->
                         new RecursoNaoEncontradoException(
-                                "Consultor não encontrado com email: " + emailConsultor
+                                "Consultor não encontrado com email: " + email
                         )
                 );
 
@@ -83,21 +93,34 @@ public class ConsultorService implements ConsultorIService {
 
     @Override
     @Transactional
-    public Optional<Consultor> atualizar(Long id, Consultor detalhesConsultor) {
+    public Optional<Consultor> atualizar(Long id, Consultor dadosAtualizados) {
 
         return consultorRepository.findById(id)
                 .map(consultorExistente -> {
 
-                    if (detalhesConsultor.getNome() != null) {
-                        consultorExistente.setNome(detalhesConsultor.getNome());
+                    // 🔒 REGRA: CREF não pode duplicar
+                    if (dadosAtualizados.getNumeroCref() != null &&
+                            !dadosAtualizados.getNumeroCref().equals(consultorExistente.getNumeroCref())) {
+
+                        consultorRepository.findByNumeroCref(dadosAtualizados.getNumeroCref())
+                                .filter(c -> !c.getId().equals(id))
+                                .ifPresent(c -> {
+                                    throw new RegraDeNegocioException("CREF já cadastrado.");
+                                });
+
+                        consultorExistente.setNumeroCref(dadosAtualizados.getNumeroCref());
                     }
 
-                    if (detalhesConsultor.getTelefone() != null) {
-                        consultorExistente.setTelefone(detalhesConsultor.getTelefone());
+                    if (dadosAtualizados.getNome() != null) {
+                        consultorExistente.setNome(dadosAtualizados.getNome());
                     }
 
-                    if (detalhesConsultor.getEspecializacao() != null) {
-                        consultorExistente.setEspecializacao(detalhesConsultor.getEspecializacao());
+                    if (dadosAtualizados.getTelefone() != null) {
+                        consultorExistente.setTelefone(dadosAtualizados.getTelefone());
+                    }
+
+                    if (dadosAtualizados.getEspecializacao() != null) {
+                        consultorExistente.setEspecializacao(dadosAtualizados.getEspecializacao());
                     }
 
                     return consultorRepository.save(consultorExistente);
@@ -110,15 +133,21 @@ public class ConsultorService implements ConsultorIService {
 
     @Override
     @Transactional
-    public boolean deletarConsultor(Long id) {
+    public void deletarConsultor(Long id) {
 
-        if (!consultorRepository.existsById(id)) {
-            throw new RecursoNaoEncontradoException(
-                    "Consultor não encontrado para exclusão com ID: " + id
+        Consultor consultor = consultorRepository.findById(id)
+                .orElseThrow(() ->
+                        new RecursoNaoEncontradoException(
+                                "Consultor não encontrado para exclusão com ID: " + id
+                        )
+                );
+
+        if (!consultor.getClientes().isEmpty()) {
+            throw new RegraDeNegocioException(
+                    "Consultor possui clientes vinculados e não pode ser removido."
             );
         }
 
-        consultorRepository.deleteById(id);
-        return true;
+        consultorRepository.delete(consultor);
     }
 }

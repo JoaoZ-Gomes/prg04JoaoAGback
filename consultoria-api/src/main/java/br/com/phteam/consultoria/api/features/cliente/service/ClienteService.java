@@ -1,110 +1,81 @@
 package br.com.phteam.consultoria.api.features.cliente.service;
 
+import br.com.phteam.consultoria.api.features.cliente.dto.ClienteRequestDTO;
+import br.com.phteam.consultoria.api.features.cliente.dto.ClienteResponseDTO;
+import br.com.phteam.consultoria.api.features.cliente.dto.ClienteUpdateDTO;
+import br.com.phteam.consultoria.api.features.cliente.mapper.ClienteMapper;
 import br.com.phteam.consultoria.api.features.cliente.model.Cliente;
 import br.com.phteam.consultoria.api.features.cliente.repository.ClienteRepository;
 import br.com.phteam.consultoria.api.infrastructure.exception.RecursoNaoEncontradoException;
 import br.com.phteam.consultoria.api.infrastructure.exception.RegraDeNegocioException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
+@RequiredArgsConstructor
+@Transactional
 public class ClienteService implements ClienteIService {
 
-    private final ClienteRepository clienteRepository;
+    private final ClienteRepository repository;
+    private final ClienteMapper mapper;
     private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    public ClienteService(
-            ClienteRepository clienteRepository,
-            PasswordEncoder passwordEncoder
-    ) {
-        this.clienteRepository = clienteRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    // -------------------- CREATE --------------------
     @Override
-    @Transactional
-    public Cliente salvar(Cliente cliente) {
+    public ClienteResponseDTO salvar(ClienteRequestDTO dto) {
 
-        if (clienteRepository.findByEmail(cliente.getEmail()).isPresent()) {
-            throw new RegraDeNegocioException("E-mail já cadastrado para outro cliente.");
+        if (repository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new RegraDeNegocioException("E-mail já cadastrado.");
         }
 
+        Cliente cliente = mapper.toEntity(dto);
         cliente.setSenha(passwordEncoder.encode(cliente.getSenha()));
-        return clienteRepository.save(cliente);
+
+        return mapper.toResponseDTO(repository.save(cliente));
     }
 
-    // -------------------- READ --------------------
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<Cliente> buscarPorId(Long id) {
-        return clienteRepository.findById(id);
-    }
+
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Cliente> buscarTodos(Pageable pageable) {
-        return clienteRepository.findAll(pageable);
+    public ClienteResponseDTO buscarPorId(Long id) {
+        Cliente cliente = repository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado: " + id));
+        return mapper.toResponseDTO(cliente);
     }
 
+    @Override
     @Transactional(readOnly = true)
-    public Optional<Cliente> findByEmail(String email) {
-        return clienteRepository.findByEmail(email);
+    public Page<ClienteResponseDTO> buscarTodos(Pageable pageable) {
+        return repository.findAll(pageable).map(mapper::toResponseDTO);
     }
 
-    // -------------------- UPDATE --------------------
     @Override
-    @Transactional
-    public Optional<Cliente> atualizar(Long id, Cliente detalhesCliente) {
+    public ClienteResponseDTO atualizar(Long id, ClienteUpdateDTO dto) {
+        Cliente cliente = repository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado: " + id));
 
-        return clienteRepository.findById(id)
-                .map(clienteExistente -> {
+        mapper.updateEntityFromDTO(dto, cliente);
 
-                    // ✔ Strings
-                    if (detalhesCliente.getNome() != null) {
-                        clienteExistente.setNome(detalhesCliente.getNome());
-                    }
-
-                    if (detalhesCliente.getTelefone() != null) {
-                        clienteExistente.setTelefone(detalhesCliente.getTelefone());
-                    }
-
-                    if (detalhesCliente.getObjetivo() != null) {
-                        clienteExistente.setObjetivo(detalhesCliente.getObjetivo());
-                    }
-
-                    // ✔ Numéricos
-                    if (detalhesCliente.getPesoAtual() > 0) {
-                        clienteExistente.setPesoAtual(detalhesCliente.getPesoAtual());
-                    }
-
-                    if (detalhesCliente.getAltura() > 0) {
-                        clienteExistente.setAltura(detalhesCliente.getAltura());
-                    }
-
-                    return clienteRepository.save(clienteExistente);
-                });
+        return mapper.toResponseDTO(repository.save(cliente));
     }
 
-
-    // -------------------- DELETE --------------------
     @Override
-    @Transactional
     public void excluirPorId(Long id) {
-
-        if (!clienteRepository.existsById(id)) {
-            throw new RecursoNaoEncontradoException(
-                    "Cliente não encontrado com ID: " + id
-            );
+        if (!repository.existsById(id)) {
+            throw new RecursoNaoEncontradoException("Cliente não encontrado: " + id);
         }
+        repository.deleteById(id);
+    }
 
-        clienteRepository.deleteById(id);
+    @Override
+    @Transactional(readOnly = true)
+    public ClienteResponseDTO buscarPorEmail(String email) {
+        Cliente cliente = repository.findByEmail(email)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado para email: " + email));
+        return mapper.toResponseDTO(cliente);
     }
 }

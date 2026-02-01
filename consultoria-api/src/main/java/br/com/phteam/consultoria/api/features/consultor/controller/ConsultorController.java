@@ -1,5 +1,6 @@
 package br.com.phteam.consultoria.api.features.consultor.controller;
 
+import br.com.phteam.consultoria.api.features.cliente.dto.ClienteResponseDTO;
 import br.com.phteam.consultoria.api.features.cliente.model.Cliente;
 import br.com.phteam.consultoria.api.features.consultor.dto.ConsultorRequestDTO;
 import br.com.phteam.consultoria.api.features.consultor.dto.ConsultorResponseDTO;
@@ -14,16 +15,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
-/**
- * Controller responsável pelas operações relacionadas aos Consultores.
- */
 @RestController
 @RequestMapping("/api/consultores")
 public class ConsultorController {
@@ -40,118 +40,96 @@ public class ConsultorController {
     // =====================================================
     // CREATE
     // =====================================================
-
-    /**
-     * Cria um novo consultor.
-     */
     @PostMapping
     public ResponseEntity<ConsultorResponseDTO> criarConsultor(
-            @RequestBody @Valid ConsultorRequestDTO consultorRequest
-    ) {
-        Consultor consultor = mapper.map(consultorRequest, Consultor.class);
-        Consultor consultorSalvo = consultorService.salvar(consultor);
-        ConsultorResponseDTO response = mapper.map(consultorSalvo, ConsultorResponseDTO.class);
+            @RequestBody @Valid ConsultorRequestDTO consultorRequest) {
 
-        return ResponseEntity.status(201).body(response);
+        Consultor consultor = mapper.map(consultorRequest, Consultor.class);
+        Consultor salvo = consultorService.salvar(consultor);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(mapper.map(salvo, ConsultorResponseDTO.class));
     }
 
     // =====================================================
-    // READ
+    // READ - LISTA PAGINADA
     // =====================================================
-
-    /**
-     * Lista todos os consultores com paginação.
-     */
     @GetMapping
-    public ResponseEntity<Page<ConsultorResponseDTO>> buscarTodosConsultores(
-            @PageableDefault(size = 10, page = 0, sort = "nome") Pageable pageable
-    ) {
-        Page<Consultor> consultores = consultorService.buscarTodos(pageable);
+    public ResponseEntity<Page<ConsultorResponseDTO>> buscarTodos(
+            @PageableDefault(size = 10, sort = "nome") Pageable pageable) {
 
-        Page<ConsultorResponseDTO> response = consultores.map(
-                consultor -> mapper.map(consultor, ConsultorResponseDTO.class)
-        );
+        Page<ConsultorResponseDTO> response = consultorService.buscarTodos(pageable)
+                .map(consultor -> mapper.map(consultor, ConsultorResponseDTO.class));
 
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Busca um consultor por ID.
-     */
+    // =====================================================
+    // READ - POR ID
+    // =====================================================
     @GetMapping("/{id}")
-    public ResponseEntity<ConsultorResponseDTO> buscarConsultorPorId(@PathVariable Long id) {
+    public ResponseEntity<ConsultorResponseDTO> buscarPorId(@PathVariable Long id) {
 
         Consultor consultor = consultorService.buscarPorId(id)
                 .orElseThrow(() ->
-                        new RecursoNaoEncontradoException("Consultor não encontrado com ID: " + id)
-                );
+                        new RecursoNaoEncontradoException("Consultor não encontrado com ID: " + id));
 
-        ConsultorResponseDTO response = mapper.map(consultor, ConsultorResponseDTO.class);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(mapper.map(consultor, ConsultorResponseDTO.class));
     }
 
     // =====================================================
-    // ENDPOINT PRINCIPAL DO DASHBOARD DO CONSULTOR
+    // DASHBOARD DO CONSULTOR LOGADO
     // =====================================================
-
-    /**
-     * Retorna os clientes vinculados ao consultor LOGADO.
-     * Apenas usuários com ROLE_CONSULTOR podem acessar.
-     */
     @GetMapping("/meus-clientes")
     @PreAuthorize("hasRole('CONSULTOR')")
-    public List<Cliente> buscarMeusClientes(Authentication authentication) {
+    public ResponseEntity<List<Cliente>> buscarMeusClientes(Authentication authentication) {
 
-        // Email vem diretamente do JWT (subject)
         String emailConsultor = authentication.getName();
 
-        // 🔥 DEBUG (pode remover depois)
-        System.out.println("🔥 CONSULTOR LOGADO: " + emailConsultor);
-        authentication.getAuthorities()
-                .forEach(a -> System.out.println("🔥 ROLE: " + a.getAuthority()));
+        // Buscar o consultor pelo email para descobrir o ID
+        Consultor consultor = consultorService.buscarPorEmail(emailConsultor)
+                .orElseThrow(() ->
+                        new RecursoNaoEncontradoException(
+                                "Consultor não encontrado com email: " + emailConsultor
+                        )
+                );
 
-        return consultorService.buscarClientesDoConsultor(emailConsultor);
+        List<Cliente> clientes = consultorService.buscarClientesDoConsultorPorId(consultor.getId());
+
+        return ResponseEntity.ok(clientes);
     }
+
+
 
     // =====================================================
     // UPDATE
     // =====================================================
-
-    /**
-     * Atualiza os dados de um consultor.
-     */
     @PutMapping("/{id}")
-    public ResponseEntity<ConsultorResponseDTO> atualizarConsultor(
+    public ResponseEntity<ConsultorResponseDTO> atualizar(
             @PathVariable Long id,
-            @RequestBody @Valid ConsultorRequestDTO detalhesConsultor
-    ) {
-        Consultor dadosAtualizados = mapper.map(detalhesConsultor, Consultor.class);
+            @RequestBody @Valid ConsultorRequestDTO request) {
 
-        Consultor consultorAtualizado = consultorService.atualizar(id, dadosAtualizados)
+        Consultor dadosAtualizados = mapper.map(request, Consultor.class);
+
+        Consultor atualizado = consultorService.atualizar(id, dadosAtualizados)
                 .orElseThrow(() ->
-                        new RecursoNaoEncontradoException("Consultor não encontrado para atualização com ID: " + id)
-                );
+                        new RecursoNaoEncontradoException("Consultor não encontrado com ID: " + id));
 
-        ConsultorResponseDTO response = mapper.map(consultorAtualizado, ConsultorResponseDTO.class);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(mapper.map(atualizado, ConsultorResponseDTO.class));
     }
 
     // =====================================================
     // DELETE
     // =====================================================
-
-    /**
-     * Deleta um consultor pelo ID.
-     */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletarConsultor(@PathVariable Long id) {
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
 
-        if (consultorService.deletarConsultor(id)) {
-            return ResponseEntity.noContent().build();
-        }
 
-        throw new RecursoNaoEncontradoException(
-                "Consultor não encontrado para exclusão com ID: " + id
-        );
+        consultorService.deletarConsultor(id);
+
+
+        return ResponseEntity.noContent().build();
     }
+
 }

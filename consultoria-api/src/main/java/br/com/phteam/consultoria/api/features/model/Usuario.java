@@ -1,18 +1,14 @@
 package br.com.phteam.consultoria.api.features.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor; // Adicionado para garantir o construtor padrão
-import lombok.AllArgsConstructor; // Adicionado para construtor completo
+import lombok.*;
 
 /**
  * Classe base abstrata que contém atributos comuns para autenticação e dados de contato.
  * @MappedSuperclass garante que seus campos sejam herdados pelas subclasses,
  * mas ela mesma não será mapeada para uma tabela no banco de dados.
  */
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass

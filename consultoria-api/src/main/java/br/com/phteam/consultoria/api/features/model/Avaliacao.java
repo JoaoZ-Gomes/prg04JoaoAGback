@@ -2,10 +2,7 @@ package br.com.phteam.consultoria.api.features.model;
 
 import br.com.phteam.consultoria.api.features.cliente.model.Cliente; // Relacionamento com Cliente
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -14,8 +11,7 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "avaliacoes")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Avaliacao {

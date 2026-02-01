@@ -1,14 +1,8 @@
-package br.com.phteam.consultoria.api.features.treino.model;
+package br.com.phteam.consultoria.api.features.exercicio.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 
-/**
- * Entidade que representa um exercício cadastrado no catálogo global do sistema.
- */
 @Entity
 @Table(name = "exercicios")
 @Getter
@@ -32,4 +26,7 @@ public class Exercicio {
 
     @Column(name = "url_video", length = 255)
     private String urlVideo;
+
+    @Column(length = 500)
+    private String descricao;
 }
