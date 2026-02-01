@@ -1,22 +1,15 @@
 package br.com.phteam.consultoria.api.features.cliente.dto;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.LocalDate;
 
-@Getter
-@Setter
-public class ClienteResponseDTO {
-
-    private Long id;
-    private String nome;
-    private String email;
-    private String cpf;
-    private String rg;
-    private LocalDate dataNascimento;
-    private String telefone;
-    private Double pesoAtual;
-    private Double altura;
-
-}
+public record ClienteResponseDTO(
+        Long id,
+        String nome,
+        String email,
+        String cpf,
+        String rg,
+        LocalDate dataNascimento,
+        String telefone,
+        Double pesoAtual,
+        Double altura
+){ }

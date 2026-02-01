@@ -1,19 +1,20 @@
 package br.com.phteam.consultoria.api.features.cliente.service;
 
-import br.com.phteam.consultoria.api.features.cliente.dto.ClienteRequestDTO;
-import br.com.phteam.consultoria.api.features.cliente.dto.ClienteResponseDTO;
-import br.com.phteam.consultoria.api.features.cliente.dto.ClienteUpdateDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import br.com.phteam.consultoria.api.features.cliente.dto.request.ClienteRequestDTO;
+import br.com.phteam.consultoria.api.features.cliente.dto.request.ClienteUpdateDTO;
+import br.com.phteam.consultoria.api.features.cliente.dto.response.ClienteResponseDTO;
 import br.com.phteam.consultoria.api.features.cliente.mapper.ClienteMapper;
 import br.com.phteam.consultoria.api.features.cliente.model.Cliente;
 import br.com.phteam.consultoria.api.features.cliente.repository.ClienteRepository;
 import br.com.phteam.consultoria.api.infrastructure.exception.RecursoNaoEncontradoException;
 import br.com.phteam.consultoria.api.infrastructure.exception.RegraDeNegocioException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +28,7 @@ public class ClienteService implements ClienteIService {
     @Override
     public ClienteResponseDTO salvar(ClienteRequestDTO dto) {
 
-        if (repository.findByEmail(dto.getEmail()).isPresent()) {
+        if (repository.findByEmail(dto.email()).isPresent()) {
             throw new RegraDeNegocioException("E-mail já cadastrado.");
         }
 

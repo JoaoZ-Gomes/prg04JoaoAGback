@@ -1,11 +1,11 @@
 package br.com.phteam.consultoria.api.features.cliente.service;
 
-import br.com.phteam.consultoria.api.features.cliente.dto.ClienteRequestDTO;
-import br.com.phteam.consultoria.api.features.cliente.dto.ClienteResponseDTO;
-import br.com.phteam.consultoria.api.features.cliente.dto.ClienteUpdateDTO;
-import br.com.phteam.consultoria.api.features.cliente.model.Cliente;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import br.com.phteam.consultoria.api.features.cliente.dto.request.ClienteRequestDTO;
+import br.com.phteam.consultoria.api.features.cliente.dto.request.ClienteUpdateDTO;
+import br.com.phteam.consultoria.api.features.cliente.dto.response.ClienteResponseDTO;
 
 public interface ClienteIService {
 

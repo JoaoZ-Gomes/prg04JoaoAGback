@@ -1,18 +1,11 @@
 package br.com.phteam.consultoria.api.features.cliente.dto;
 
 import jakarta.validation.constraints.Positive;
-import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
-public class ClienteUpdateDTO {
+public record ClienteUpdateDTO(
+        @Positive(message = "Peso deve ser positivo")
+        Double pesoAtual,
 
-    @Positive(message = "Peso deve ser positivo")
-    private Double pesoAtual;
-
-    @Positive(message = "Altura deve ser positiva")
-    private Double altura;
-
-
-}
+        @Positive(message = "Altura deve ser positiva")
+        Double altura
+){ }

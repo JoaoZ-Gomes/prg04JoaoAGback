@@ -1,16 +1,20 @@
 package br.com.phteam.consultoria.api.infrastructure.auth.controller;
 
-import br.com.phteam.consultoria.api.infrastructure.auth.dto.LoginRequestDTO;
-import br.com.phteam.consultoria.api.infrastructure.auth.dto.LoginResponseDTO;
-import br.com.phteam.consultoria.api.infrastructure.auth.jwt.JwtTokenService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import br.com.phteam.consultoria.api.infrastructure.auth.dto.request.LoginRequestDTO;
+import br.com.phteam.consultoria.api.infrastructure.auth.dto.response.LoginResponseDTO;
+import br.com.phteam.consultoria.api.infrastructure.auth.jwt.JwtTokenService;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Controller responsável pela autenticação e geração do JWT.
@@ -34,8 +38,8 @@ public class AuthController {
         // 1️ Autentica email + senha
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getSenha()
+                        request.email(),
+                        request.senha()
                 )
         );
 

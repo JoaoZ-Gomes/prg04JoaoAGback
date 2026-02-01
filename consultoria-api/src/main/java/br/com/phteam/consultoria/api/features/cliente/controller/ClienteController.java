@@ -1,22 +1,26 @@
 package br.com.phteam.consultoria.api.features.cliente.controller;
 
-import br.com.phteam.consultoria.api.features.cliente.dto.ClienteRequestDTO;
-import br.com.phteam.consultoria.api.features.cliente.dto.ClienteResponseDTO;
-import br.com.phteam.consultoria.api.features.cliente.dto.ClienteUpdateDTO;
-import br.com.phteam.consultoria.api.features.cliente.model.Cliente;
-import br.com.phteam.consultoria.api.features.cliente.service.ClienteIService;
-import br.com.phteam.consultoria.api.features.cliente.service.ClienteService;
-import br.com.phteam.consultoria.api.infrastructure.exception.RecursoNaoEncontradoException;
-import br.com.phteam.consultoria.api.infrastructure.mapper.ObjectMapperUtil;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import br.com.phteam.consultoria.api.features.cliente.dto.request.ClienteRequestDTO;
+import br.com.phteam.consultoria.api.features.cliente.dto.request.ClienteUpdateDTO;
+import br.com.phteam.consultoria.api.features.cliente.dto.response.ClienteResponseDTO;
+import br.com.phteam.consultoria.api.features.cliente.service.ClienteIService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/clientes")
