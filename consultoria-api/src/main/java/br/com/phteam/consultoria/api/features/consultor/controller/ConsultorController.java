@@ -2,7 +2,6 @@ package br.com.phteam.consultoria.api.features.consultor.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -27,23 +26,26 @@ import br.com.phteam.consultoria.api.features.consultor.service.ConsultorService
 import br.com.phteam.consultoria.api.infrastructure.exception.RecursoNaoEncontradoException;
 import br.com.phteam.consultoria.api.infrastructure.mapper.ObjectMapperUtil;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/consultores")
+@RequiredArgsConstructor
 public class ConsultorController {
 
     private final ConsultorService consultorService;
     private final ObjectMapperUtil mapper;
 
-    @Autowired
-    public ConsultorController(ConsultorService consultorService, ObjectMapperUtil mapper) {
-        this.consultorService = consultorService;
-        this.mapper = mapper;
-    }
+    // =====================================================
+    // POST
+    // =====================================================
 
-    // =====================================================
-    // CREATE
-    // =====================================================
+    /**
+     * Cria um novo consultor.
+     *
+     * @param consultorRequest os dados do consultor a ser criado
+     * @return ResponseEntity com o consultor criado e status 201
+     */
     @PostMapping
     public ResponseEntity<ConsultorResponseDTO> criarConsultor(
             @RequestBody @Valid ConsultorRequestDTO consultorRequest) {
@@ -57,8 +59,15 @@ public class ConsultorController {
     }
 
     // =====================================================
-    // READ - LISTA PAGINADA
+    // GET PAGINADO
     // =====================================================
+
+    /**
+     * Lista todos os consultores com paginação.
+     *
+     * @param pageable parâmetros de paginação
+     * @return ResponseEntity com página de consultores
+     */
     @GetMapping
     public ResponseEntity<Page<ConsultorResponseDTO>> buscarTodos(
             @PageableDefault(size = 10, sort = "nome") Pageable pageable) {
@@ -70,8 +79,16 @@ public class ConsultorController {
     }
 
     // =====================================================
-    // READ - POR ID
+    // GET POR ID
     // =====================================================
+
+    /**
+     * Busca um consultor pelo ID.
+     *
+     * @param id o identificador do consultor
+     * @return ResponseEntity com os dados do consultor
+     * @throws RecursoNaoEncontradoException se não encontrado
+     */
     @GetMapping("/{id}")
     public ResponseEntity<ConsultorResponseDTO> buscarPorId(@PathVariable Long id) {
 
@@ -83,15 +100,22 @@ public class ConsultorController {
     }
 
     // =====================================================
-    // DASHBOARD DO CONSULTOR LOGADO
+    // MEUS CLIENTES
     // =====================================================
+
+    /**
+     * Lista todos os clientes do consultor autenticado.
+     *
+     * @param authentication a autenticação do usuário
+     * @return ResponseEntity com lista de clientes do consultor
+     * @throws RecursoNaoEncontradoException se não encontrado
+     */
     @GetMapping("/meus-clientes")
     @PreAuthorize("hasRole('CONSULTOR')")
     public ResponseEntity<List<Cliente>> buscarMeusClientes(Authentication authentication) {
 
         String emailConsultor = authentication.getName();
 
-        // Buscar o consultor pelo email para descobrir o ID
         Consultor consultor = consultorService.buscarPorEmail(emailConsultor)
                 .orElseThrow(() ->
                         new RecursoNaoEncontradoException(
@@ -104,11 +128,18 @@ public class ConsultorController {
         return ResponseEntity.ok(clientes);
     }
 
-
-
     // =====================================================
-    // UPDATE
+    // PUT
     // =====================================================
+
+    /**
+     * Atualiza um consultor existente.
+     *
+     * @param id      o identificador do consultor
+     * @param request os dados para atualização
+     * @return ResponseEntity com o consultor atualizado
+     * @throws RecursoNaoEncontradoException se não encontrado
+     */
     @PutMapping("/{id}")
     public ResponseEntity<ConsultorResponseDTO> atualizar(
             @PathVariable Long id,
@@ -126,14 +157,17 @@ public class ConsultorController {
     // =====================================================
     // DELETE
     // =====================================================
+
+    /**
+     * Deleta um consultor pelo ID.
+     *
+     * @param id o identificador do consultor a ser deletado
+     * @return ResponseEntity com status 204
+     * @throws RecursoNaoEncontradoException se não encontrado
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-
-
         consultorService.deletarConsultor(id);
-
-
         return ResponseEntity.noContent().build();
     }
-
 }

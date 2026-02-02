@@ -1,7 +1,5 @@
 package br.com.phteam.consultoria.api.infrastructure.config;
 
-import br.com.phteam.consultoria.api.features.usuario.CustomUserDetailsService;
-import br.com.phteam.consultoria.api.infrastructure.auth.jwt.JwtAuthorizationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,8 +17,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import br.com.phteam.consultoria.api.features.usuario.CustomUserDetailsService;
+import br.com.phteam.consultoria.api.infrastructure.auth.jwt.JwtAuthorizationFilter;
+
 import java.util.List;
 
+/**
+ * Configuração de segurança da aplicação.
+ * Define autenticação, autorização, CORS e filtros JWT.
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -29,37 +34,41 @@ public class SecurityConfiguration {
     private final JwtAuthorizationFilter jwtAuthorizationFilter;
     private final CustomUserDetailsService customUserDetailsService;
 
-    // 🔐 FILTRO PRINCIPAL
+    // =====================================================
+    // SECURITY FILTER CHAIN
+    // =====================================================
+
+    /**
+     * Configura a cadeia de filtros de segurança.
+     *
+     * @param http HttpSecurity para configuração
+     * @return SecurityFilterChain configurado
+     * @throws Exception se houver erro na configuração
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // ✅ CORS NO SECURITY (
+                // Configuração de CORS
                 .cors(cors -> {})
-
-                // ❌ CSRF desabilitado (API stateless)
+                // CSRF desabilitado (API stateless)
                 .csrf(AbstractHttpConfigurer::disable)
-
-                // 🔐 API SEM SESSÃO
+                // API sem sessão (stateless)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
-                // 🔑 REGRAS DE ACESSO
+                // Regras de acesso
                 .authorizeHttpRequests(authorize -> authorize
-
-                        // 🔓 Públicos
+                        // Endpoints públicos
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
-
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-
-                        // 🔒 CLIENTE
+                        // Criar cliente
+                        .requestMatchers(HttpMethod.POST, "/api/clientes").permitAll()
+                        // Acesso do cliente
                         .requestMatchers(HttpMethod.GET, "/api/clientes/meu-perfil")
                         .hasRole("CLIENTE")
-
-                        // 🔒 CONSULTOR
+                        // Acesso do consultor
                         .requestMatchers(HttpMethod.GET, "/api/clientes/**")
                         .hasRole("CONSULTOR")
                         .requestMatchers(HttpMethod.PUT, "/api/clientes/**")
@@ -68,15 +77,10 @@ public class SecurityConfiguration {
                         .hasRole("CONSULTOR")
                         .requestMatchers("/api/consultores/**")
                         .hasRole("CONSULTOR")
-
-
-                        .requestMatchers(HttpMethod.POST, "/api/clientes").permitAll()
-
-                        // 🔐 Qualquer outra precisa autenticação
+                        // Qualquer outra requisição requer autenticação
                         .anyRequest().authenticated()
                 )
-
-                // 🔑 FILTRO JWT
+                // Filtro JWT
                 .addFilterBefore(
                         jwtAuthorizationFilter,
                         UsernamePasswordAuthenticationFilter.class
@@ -85,7 +89,17 @@ public class SecurityConfiguration {
         return http.build();
     }
 
-    // 🔐 AUTH MANAGER
+    // =====================================================
+    // AUTHENTICATION MANAGER
+    // =====================================================
+
+    /**
+     * Configura o gerenciador de autenticação.
+     *
+     * @param http HttpSecurity para obter o builder
+     * @return AuthenticationManager configurado
+     * @throws Exception se houver erro na configuração
+     */
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http)
             throws Exception {
@@ -100,13 +114,29 @@ public class SecurityConfiguration {
         return authBuilder.build();
     }
 
-    // 🔐 PASSWORD
+    // =====================================================
+    // PASSWORD ENCODER
+    // =====================================================
+
+    /**
+     * Configura o codificador de senha BCrypt.
+     *
+     * @return PasswordEncoder BCrypt configurado
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // 🌍 CORS CONFIG
+    // =====================================================
+    // CORS CONFIGURATION SOURCE
+    // =====================================================
+
+    /**
+     * Configura a origem CORS da aplicação.
+     *
+     * @return CorsConfigurationSource configurado
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 

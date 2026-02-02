@@ -30,12 +30,32 @@ public class ExercicioController {
 
     private final ExercicioIService service;
 
+    // =====================================================
+    // POST
+    // =====================================================
+
+    /**
+     * Cria um novo exercício.
+     *
+     * @param dto os dados do exercício a ser criado
+     * @return ResponseEntity com o exercício criado e status 201
+     */
     @PostMapping
     public ResponseEntity<ExercicioResponseDTO> criar(@RequestBody @Valid ExercicioCriarRequestDTO dto) {
         ExercicioResponseDTO saved = service.save(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
+    // =====================================================
+    // GET PAGINADO
+    // =====================================================
+
+    /**
+     * Lista todos os exercícios com paginação.
+     *
+     * @param pageable parâmetros de paginação
+     * @return ResponseEntity com página de exercícios
+     */
     @GetMapping
     public ResponseEntity<Page<ExercicioResponseDTO>> listar(
             @PageableDefault(size = 10, sort = "nome") Pageable pageable) {
@@ -43,16 +63,46 @@ public class ExercicioController {
         return ResponseEntity.ok(service.findAllPaged(pageable));
     }
 
+    // =====================================================
+    // GET TODOS SEM PAGINAÇÃO
+    // =====================================================
+
+    /**
+     * Lista todos os exercícios sem paginação.
+     *
+     * @return ResponseEntity com lista de todos os exercícios
+     */
     @GetMapping("/all")
     public ResponseEntity<List<ExercicioResponseDTO>> listarTodos() {
         return ResponseEntity.ok(service.findAll());
     }
 
+    // =====================================================
+    // GET POR ID
+    // =====================================================
+
+    /**
+     * Busca um exercício pelo ID.
+     *
+     * @param id o identificador do exercício
+     * @return ResponseEntity com os dados do exercício
+     */
     @GetMapping("/{id}")
     public ResponseEntity<ExercicioResponseDTO> buscar(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
+    // =====================================================
+    // PUT
+    // =====================================================
+
+    /**
+     * Atualiza um exercício existente.
+     *
+     * @param id  o identificador do exercício
+     * @param dto os dados para atualização
+     * @return ResponseEntity com o exercício atualizado
+     */
     @PutMapping("/{id}")
     public ResponseEntity<ExercicioResponseDTO> atualizar(
             @PathVariable Long id,
@@ -70,6 +120,16 @@ public class ExercicioController {
         return ResponseEntity.ok(service.update(withId));
     }
 
+    // =====================================================
+    // DELETE
+    // =====================================================
+
+    /**
+     * Deleta um exercício pelo ID.
+     *
+     * @param id o identificador do exercício a ser deletado
+     * @return ResponseEntity com status 204
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.delete(id);

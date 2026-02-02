@@ -19,6 +19,6 @@ public interface ConsultorRepository extends JpaRepository<Consultor, Long> {
 
     List<Consultor> findByEspecializacaoIgnoreCase(String especializacao);
 
-    //  Versão futura ( busca parcial)
+
     List<Consultor> findByEspecializacaoContainingIgnoreCase(String termo);
 }

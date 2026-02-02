@@ -28,14 +28,21 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenService jwtTokenService;
 
+    // =====================================================
+    // POST - LOGIN
+    // =====================================================
+
     /**
      * Realiza login de Cliente ou Consultor.
-     * Retorna JWT + email + tipo de usuário.
+     * Autentica o usuário e retorna JWT + email + tipo de usuário.
+     *
+     * @param request contém email e senha do usuário
+     * @return ResponseEntity com LoginResponseDTO contendo token e dados do usuário
      */
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO request) {
 
-        // 1️ Autentica email + senha
+        // Autentica email + senha
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.email(),
@@ -43,10 +50,10 @@ public class AuthController {
                 )
         );
 
-        // 2️ Usuário autenticado
+        // Usuário autenticado
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-        // 3️ Extrai o tipo de usuário a partir da ROLE
+        // Extrai o tipo de usuário a partir da ROLE
         String tipoUsuario = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority) // ROLE_CLIENTE | ROLE_CONSULTOR
                 .findFirst()
@@ -55,14 +62,10 @@ public class AuthController {
                 .map(s -> s.substring(0, 1).toUpperCase() + s.substring(1)) // Cliente | Consultor
                 .orElse("Indefinido");
 
-        //  DEBUG OPCIONAL (pode remover depois)
-        System.out.println("Usuário logado: " + userDetails.getUsername());
-        System.out.println("Tipo: " + tipoUsuario);
-
-        // 4️ Gera o JWT
+        // Gera o JWT
         String token = jwtTokenService.generateToken(authentication);
 
-        //  Retorno
+        // Retorno
         return ResponseEntity.ok(
                 new LoginResponseDTO(
                         token,

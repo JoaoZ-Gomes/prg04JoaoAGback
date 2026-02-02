@@ -1,4 +1,4 @@
-package br.com.phteam.consultoria.api.infrastructure.exception; // Ajuste o pacote conforme sua estrutura
+package br.com.phteam.consultoria.api.infrastructure.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,12 +10,24 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
-// Indica ao Spring que esta classe deve tratar exceções globalmente
+/**
+ * Manipulador global de exceções para a API.
+ * Trata todas as exceções não capturadas e retorna respostas HTTP padronizadas.
+ */
 @RestControllerAdvice
 public class ErrorHandler {
 
-    // 1. Trata exceções de Validação de Campos (@Valid falhou)
-    // Retorna HTTP 400 e uma lista de erros de campo
+    // =====================================================
+    // VALIDAÇÃO
+    // =====================================================
+
+    /**
+     * Trata exceções de validação de campos.
+     * Lançada quando @Valid falha em algum campo do RequestBody.
+     *
+     * @param ex a exceção de validação
+     * @return ResponseEntity com mapa de erros de campo e HTTP 400
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(
             MethodArgumentNotValidException ex) {
@@ -23,7 +35,6 @@ public class ErrorHandler {
         Map<String, String> errors = new HashMap<>();
 
         ex.getBindingResult().getAllErrors().forEach(error -> {
-            // Verifica se o erro é de campo para pegar o nome
             String fieldName = error instanceof FieldError ? ((FieldError) error).getField() : error.getObjectName();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
@@ -32,8 +43,17 @@ public class ErrorHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
-    // 2. Trata a RegraDeNegocioException (Ex: E-mail ou CREF duplicado)
-    // Retorna HTTP 400 e a mensagem de erro
+    // =====================================================
+    // REGRA DE NEGÓCIO
+    // =====================================================
+
+    /**
+     * Trata exceções de regra de negócio violada.
+     * Exemplos: email duplicado, CPF inválido, dados inconsistentes.
+     *
+     * @param ex a exceção de regra de negócio
+     * @return ResponseEntity com mensagem de erro e HTTP 400
+     */
     @ExceptionHandler(RegraDeNegocioException.class)
     public ResponseEntity<String> handleRegraDeNegocioException(
             RegraDeNegocioException ex) {
@@ -41,8 +61,17 @@ public class ErrorHandler {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    // 3. Trata a RecursoNaoEncontradoException (Ex: Consulta por ID inexistente)
-    // Retorna HTTP 404 e a mensagem de erro
+    // =====================================================
+    // RECURSO NÃO ENCONTRADO
+    // =====================================================
+
+    /**
+     * Trata exceções de recurso não encontrado.
+     * Lançada quando uma consulta por ID retorna vazio.
+     *
+     * @param ex a exceção de recurso não encontrado
+     * @return ResponseEntity com mensagem de erro e HTTP 404
+     */
     @ExceptionHandler(RecursoNaoEncontradoException.class)
     public ResponseEntity<String> handleRecursoNaoEncontradoException(
             RecursoNaoEncontradoException ex) {

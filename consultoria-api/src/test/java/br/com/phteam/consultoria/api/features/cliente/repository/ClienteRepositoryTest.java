@@ -29,10 +29,4 @@ class ClienteRepositoryTest {
 		assertThat(found).isPresent();
 		assertThat(found.get().getId()).isEqualTo(saved.getId());
 	}
-
-	@Test
-	void findByConsultorId_emptyWhenNoConsultor() {
-		var list = repository.findByConsultorId(999L);
-		assertThat(list).isEmpty();
-	}
 }

@@ -1,9 +1,17 @@
 package br.com.phteam.consultoria.api.features.cliente.model;
 
-import br.com.phteam.consultoria.api.features.consultor.model.Consultor;
-import jakarta.persistence.*;
-import lombok.Data;
 import java.time.LocalDate;
+
+import br.com.phteam.consultoria.api.features.consultor.model.Consultor;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.Data;
 
 @Entity
 @Table(name = "clientes")
@@ -28,8 +36,6 @@ public class Cliente {
     private String rg;
 
     private LocalDate dataNascimento;
-
-    private String objetivo;
 
     private String telefone;
 

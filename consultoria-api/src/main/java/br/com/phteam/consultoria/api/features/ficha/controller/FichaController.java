@@ -30,11 +30,31 @@ public class FichaController {
 
     private final FichaIService service;
 
+    // =====================================================
+    // POST
+    // =====================================================
+
+    /**
+     * Cria uma nova ficha de treinamento.
+     *
+     * @param dto os dados da ficha a ser criada
+     * @return ResponseEntity com a ficha criada e status 201
+     */
     @PostMapping
     public ResponseEntity<FichaResponseDTO> criar(@RequestBody @Valid FichaCriarRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.save(dto));
     }
 
+    // =====================================================
+    // GET PAGINADO
+    // =====================================================
+
+    /**
+     * Lista todas as fichas com paginação.
+     *
+     * @param pageable parâmetros de paginação
+     * @return ResponseEntity com página de fichas
+     */
     @GetMapping
     public ResponseEntity<Page<FichaResponseDTO>> listar(
             @PageableDefault(size = 10, sort = "nome") Pageable pageable) {
@@ -42,16 +62,46 @@ public class FichaController {
         return ResponseEntity.ok(service.findAllPaged(pageable));
     }
 
+    // =====================================================
+    // GET TODOS SEM PAGINAÇÃO
+    // =====================================================
+
+    /**
+     * Lista todas as fichas sem paginação.
+     *
+     * @return ResponseEntity com lista de todas as fichas
+     */
     @GetMapping("/all")
     public ResponseEntity<List<FichaResponseDTO>> listarTodos() {
         return ResponseEntity.ok(service.findAll());
     }
 
+    // =====================================================
+    // GET POR ID
+    // =====================================================
+
+    /**
+     * Busca uma ficha pelo ID.
+     *
+     * @param id o identificador da ficha
+     * @return ResponseEntity com os dados da ficha
+     */
     @GetMapping("/{id}")
     public ResponseEntity<FichaResponseDTO> buscar(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
+    // =====================================================
+    // PUT
+    // =====================================================
+
+    /**
+     * Atualiza uma ficha existente.
+     *
+     * @param id  o identificador da ficha
+     * @param dto os dados para atualização
+     * @return ResponseEntity com a ficha atualizada
+     */
     @PutMapping("/{id}")
     public ResponseEntity<FichaResponseDTO> atualizar(
             @PathVariable Long id,
@@ -66,6 +116,16 @@ public class FichaController {
         return ResponseEntity.ok(service.update(withId));
     }
 
+    // =====================================================
+    // DELETE
+    // =====================================================
+
+    /**
+     * Deleta uma ficha pelo ID.
+     *
+     * @param id o identificador da ficha a ser deletada
+     * @return ResponseEntity com status 204
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.delete(id);

@@ -1,14 +1,11 @@
 package br.com.phteam.consultoria.api.features.cliente.repository;
 
-import br.com.phteam.consultoria.api.features.cliente.model.Cliente;
-import br.com.phteam.consultoria.api.features.cliente.model.ObjetivoCliente;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
+import br.com.phteam.consultoria.api.features.cliente.model.Cliente;
 
 /**
  * Repository da entidade Cliente.
@@ -18,8 +15,4 @@ import java.util.Optional;
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 
     Optional<Cliente> findByEmail(String email);
-
-    List<Cliente> findByConsultorId(Long consultorId);
-
-    List<Cliente> findByObjetivo(String objetivo);
 }

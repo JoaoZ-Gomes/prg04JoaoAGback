@@ -29,9 +29,16 @@ public class ClienteController {
 
     private final ClienteIService service;
 
-    // ---------------------------
+    // =====================================================
     // POST
-    // ---------------------------
+    // =====================================================
+
+    /**
+     * Cria um novo cliente.
+     *
+     * @param dto os dados do cliente a ser criado
+     * @return ResponseEntity com o cliente criado e status 201
+     */
     @PostMapping
     public ResponseEntity<ClienteResponseDTO> criar(
             @RequestBody @Valid ClienteRequestDTO dto) {
@@ -41,9 +48,16 @@ public class ClienteController {
                 .body(service.salvar(dto));
     }
 
-    // ---------------------------
+    // =====================================================
     // GET PAGINADO
-    // ---------------------------
+    // =====================================================
+
+    /**
+     * Lista todos os clientes com paginação.
+     *
+     * @param pageable parâmetros de paginação
+     * @return ResponseEntity com página de clientes
+     */
     @GetMapping
     public ResponseEntity<Page<ClienteResponseDTO>> listar(
             @PageableDefault(size = 10, sort = "nome") Pageable pageable) {
@@ -51,17 +65,32 @@ public class ClienteController {
         return ResponseEntity.ok(service.buscarTodos(pageable));
     }
 
-    // ---------------------------
+    // =====================================================
     // GET POR ID
-    // ---------------------------
+    // =====================================================
+
+    /**
+     * Busca um cliente pelo ID.
+     *
+     * @param id o identificador do cliente
+     * @return ResponseEntity com os dados do cliente
+     */
     @GetMapping("/{id}")
     public ResponseEntity<ClienteResponseDTO> buscar(@PathVariable Long id) {
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 
-    // ---------------------------
+    // =====================================================
     // PUT
-    // ---------------------------
+    // =====================================================
+
+    /**
+     * Atualiza um cliente existente.
+     *
+     * @param id  o identificador do cliente
+     * @param dto os dados para atualização
+     * @return ResponseEntity com o cliente atualizado
+     */
     @PutMapping("/{id}")
     public ResponseEntity<ClienteResponseDTO> atualizar(
             @PathVariable Long id,
@@ -70,18 +99,32 @@ public class ClienteController {
         return ResponseEntity.ok(service.atualizar(id, dto));
     }
 
-    // ---------------------------
+    // =====================================================
     // DELETE
-    // ---------------------------
+    // =====================================================
+
+    /**
+     * Deleta um cliente pelo ID.
+     *
+     * @param id o identificador do cliente a ser deletado
+     * @return ResponseEntity com status 204
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.excluirPorId(id);
         return ResponseEntity.noContent().build();
     }
 
-    // ---------------------------
+    // =====================================================
     // MEU PERFIL
-    // ---------------------------
+    // =====================================================
+
+    /**
+     * Obtém o perfil do cliente autenticado.
+     *
+     * @param auth a autenticação do usuário
+     * @return ResponseEntity com os dados do cliente autenticado
+     */
     @GetMapping("/meu-perfil")
     public ResponseEntity<ClienteResponseDTO> meuPerfil(Authentication auth) {
         return ResponseEntity.ok(service.buscarPorEmail(auth.getName()));
