@@ -50,7 +50,8 @@ public class SecurityConfiguration {
 
         http
                 // Configuração de CORS
-                .cors(cors -> {})
+                .cors(cors -> {
+                })
                 // CSRF desabilitado (API stateless)
                 .csrf(AbstractHttpConfigurer::disable)
                 // API sem sessão (stateless)
@@ -143,13 +144,15 @@ public class SecurityConfiguration {
         org.springframework.web.cors.CorsConfiguration config =
                 new org.springframework.web.cors.CorsConfiguration();
 
-        config.setAllowedOriginPatterns(
-                List.of("http://localhost:*")
-        );
+        config.setAllowedOriginPatterns(List.of(
+                "http://localhost:*",
+                "https://*.vercel.app",
+                "https://phteam-20kpzu3t5-joaogomes-projects-741c7808.vercel.app"
+        ));
 
-        config.setAllowedMethods(
-                List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-        );
+        config.setAllowedMethods(List.of(
+                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
+        ));
 
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
@@ -161,3 +164,4 @@ public class SecurityConfiguration {
         return source;
     }
 }
+
