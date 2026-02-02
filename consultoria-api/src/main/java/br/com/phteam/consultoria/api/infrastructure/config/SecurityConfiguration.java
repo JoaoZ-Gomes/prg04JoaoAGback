@@ -60,7 +60,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // Cadastro de cliente (público)
-                        .requestMatchers(HttpMethod.POST, "/api/clientes/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/clientes").permitAll()
 
                         // =========================
                         // CLIENTE LOGADO
@@ -71,7 +71,9 @@ public class SecurityConfiguration {
                         // =========================
                         // CONSULTOR
                         // =========================
-                        .requestMatchers("/api/clientes/**").hasRole("CONSULTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/clientes/**").hasRole("CONSULTOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/clientes/**").hasRole("CONSULTOR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/clientes/**").hasRole("CONSULTOR")
                         .requestMatchers("/api/consultores/**").hasRole("CONSULTOR")
 
                         // =========================
