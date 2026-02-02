@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class ClienteController {
 
     private final ClienteIService service;
+    private static final Logger logger = LoggerFactory.getLogger(ClienteController.class);
 
     // =====================================================
     // POST
@@ -41,7 +45,13 @@ public class ClienteController {
      */
     @PostMapping
     public ResponseEntity<ClienteResponseDTO> criar(
-            @RequestBody @Valid ClienteRequestDTO dto) {
+            @RequestBody @Valid ClienteRequestDTO dto,
+            HttpServletRequest request) {
+
+        // Temporary logging to debug 403 on deploy (remove after troubleshooting)
+        String origin = request.getHeader("Origin");
+        String auth = request.getHeader("Authorization");
+        logger.info("[TEMP LOG] POST /api/clientes called - Origin: {} - Authorization present: {} - RemoteAddr: {}", origin, (auth != null), request.getRemoteAddr());
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
