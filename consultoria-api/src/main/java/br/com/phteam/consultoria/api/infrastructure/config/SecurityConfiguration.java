@@ -59,26 +59,33 @@ public class SecurityConfiguration {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 // Regras de acesso
-                .authorizeHttpRequests(authorize -> authorize
-                        // Endpoints públicos
+                .authorizeHttpRequests(auth -> auth
+
+                        // =========================
+                        // PÚBLICOS
+                        // =========================
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Criar cliente
-                        .requestMatchers(HttpMethod.POST, "/api/clientes").permitAll()
-                        // Acesso do cliente
+
+                        // Cadastro de cliente (público)
+                        .requestMatchers(HttpMethod.POST, "/api/clientes/**").permitAll()
+
+                        // =========================
+                        // CLIENTE LOGADO
+                        // =========================
                         .requestMatchers(HttpMethod.GET, "/api/clientes/meu-perfil")
                         .hasRole("CLIENTE")
-                        // Acesso do consultor
-                        .requestMatchers(HttpMethod.GET, "/api/clientes/**")
-                        .hasRole("CONSULTOR")
-                        .requestMatchers(HttpMethod.PUT, "/api/clientes/**")
-                        .hasRole("CONSULTOR")
-                        .requestMatchers(HttpMethod.PATCH, "/api/clientes/**")
-                        .hasRole("CONSULTOR")
-                        .requestMatchers("/api/consultores/**")
-                        .hasRole("CONSULTOR")
-                        // Qualquer outra requisição requer autenticação
+
+                        // =========================
+                        // CONSULTOR
+                        // =========================
+                        .requestMatchers("/api/clientes/**").hasRole("CONSULTOR")
+                        .requestMatchers("/api/consultores/**").hasRole("CONSULTOR")
+
+                        // =========================
+                        // QUALQUER OUTRO
+                        // =========================
                         .anyRequest().authenticated()
                 )
                 // Filtro JWT
