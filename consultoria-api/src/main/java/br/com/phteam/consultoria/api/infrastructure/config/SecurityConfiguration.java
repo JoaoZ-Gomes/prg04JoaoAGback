@@ -1,6 +1,7 @@
 package br.com.phteam.consultoria.api.infrastructure.config;
 
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,8 +20,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import br.com.phteam.consultoria.api.features.usuario.CustomUserDetailsService;
 import br.com.phteam.consultoria.api.infrastructure.auth.jwt.JwtAuthorizationFilter;
-
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
@@ -130,7 +130,9 @@ public class SecurityConfiguration {
 
         config.setAllowedOriginPatterns(List.of(
                 "http://localhost:*",
-                "https://*.vercel.app"
+                "http://127.0.0.1:*",
+                "https://*.vercel.app",
+                "https://*.onrender.com"
         ));
 
         config.setAllowedMethods(List.of(

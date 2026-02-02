@@ -1,5 +1,7 @@
 package br.com.phteam.consultoria.api.features.cliente.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -12,9 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,6 +21,7 @@ import br.com.phteam.consultoria.api.features.cliente.dto.request.ClienteRequest
 import br.com.phteam.consultoria.api.features.cliente.dto.request.ClienteUpdateDTO;
 import br.com.phteam.consultoria.api.features.cliente.dto.response.ClienteResponseDTO;
 import br.com.phteam.consultoria.api.features.cliente.service.ClienteIService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -43,8 +43,8 @@ public class ClienteController {
      * @param dto os dados do cliente a ser criado
      * @return ResponseEntity com o cliente criado e status 201
      */
-    @PostMapping
-    public ResponseEntity<ClienteResponseDTO> criar(
+        @PostMapping
+        public ResponseEntity<ClienteResponseDTO> criar(
             @RequestBody @Valid ClienteRequestDTO dto,
             HttpServletRequest request) {
 
@@ -54,9 +54,9 @@ public class ClienteController {
         logger.info("[TEMP LOG] POST /api/clientes called - Origin: {} - Authorization present: {} - RemoteAddr: {}", origin, (auth != null), request.getRemoteAddr());
 
         return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(service.salvar(dto));
-    }
+            .status(HttpStatus.CREATED)
+            .body(service.salvar(dto));
+        }
 
     // =====================================================
     // GET PAGINADO
