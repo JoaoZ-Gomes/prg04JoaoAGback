@@ -2,6 +2,7 @@ package br.com.phteam.consultoria.api.infrastructure.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -77,5 +78,23 @@ public class ErrorHandler {
             RecursoNaoEncontradoException ex) {
 
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    // =====================================================
+    // AUTENTICAÇÃO
+    // =====================================================
+
+    /**
+     * Trata exceções de autenticação falha.
+     * Lançada quando email ou senha estão incorretos.
+     *
+     * @param ex a exceção de autenticação
+     * @return ResponseEntity com mensagem de erro e HTTP 401
+     */
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<String> handleAuthenticationException(
+            AuthenticationException ex) {
+
+        return new ResponseEntity<>("Email ou senha incorretos.", HttpStatus.UNAUTHORIZED);
     }
 }

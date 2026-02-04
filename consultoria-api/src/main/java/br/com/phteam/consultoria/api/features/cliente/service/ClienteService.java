@@ -40,7 +40,11 @@ public class ClienteService implements ClienteIService {
     public ClienteResponseDTO salvar(ClienteRequestDTO dto) {
 
         if (repository.findByEmail(dto.email()).isPresent()) {
-            throw new RegraDeNegocioException("E-mail já cadastrado.");
+            throw new RegraDeNegocioException("Este email já está cadastrado no sistema.");
+        }
+        
+        if (repository.findByCpf(dto.cpf()).isPresent()) {
+            throw new RegraDeNegocioException("Este CPF já está cadastrado no sistema.");
         }
 
         Cliente cliente = mapper.toEntity(dto);

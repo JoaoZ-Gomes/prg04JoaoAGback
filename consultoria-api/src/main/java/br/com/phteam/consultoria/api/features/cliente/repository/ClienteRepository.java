@@ -15,4 +15,6 @@ import br.com.phteam.consultoria.api.features.cliente.model.Cliente;
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 
     Optional<Cliente> findByEmail(String email);
+    
+    Optional<Cliente> findByCpf(String cpf);
 }
