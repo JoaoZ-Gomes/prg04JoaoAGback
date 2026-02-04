@@ -32,7 +32,8 @@ public class ClienteMapper {
                 cliente.getDataNascimento(),
                 cliente.getTelefone(),
                 cliente.getPesoAtual(),
-                cliente.getAltura()
+                cliente.getAltura(),
+                cliente.getObjetivo()
         );
     }
 

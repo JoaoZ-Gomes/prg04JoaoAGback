@@ -2,6 +2,8 @@ package br.com.phteam.consultoria.api.features.cliente.dto.response;
 
 import java.time.LocalDate;
 
+import br.com.phteam.consultoria.api.features.cliente.model.ObjetivoCliente;
+
 public record ClienteResponseDTO(
         Long id,
         String nome,
@@ -11,5 +13,6 @@ public record ClienteResponseDTO(
         LocalDate dataNascimento,
         String telefone,
         Double pesoAtual,
-        Double altura
+        Double altura,
+        ObjetivoCliente objetivo
 ){ }

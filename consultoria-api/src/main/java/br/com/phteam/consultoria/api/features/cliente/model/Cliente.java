@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import br.com.phteam.consultoria.api.features.consultor.model.Consultor;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -42,6 +44,10 @@ public class Cliente {
     private Double pesoAtual;
 
     private Double altura;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "objetivo")
+    private ObjetivoCliente objetivo;
 
     @ManyToOne
     @JoinColumn(name = "consultor_id")

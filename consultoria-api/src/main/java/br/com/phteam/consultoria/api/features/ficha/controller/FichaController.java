@@ -107,13 +107,23 @@ public class FichaController {
             @PathVariable Long id,
             @RequestBody @Valid FichaAtualizarRequestDTO dto) {
 
+        System.out.println("=== CONTROLLER ATUALIZAR ===");
+        System.out.println("PathVariable ID: " + id);
+        System.out.println("DTO ID: " + dto.id());
+        System.out.println("DTO Nome: " + dto.nome());
+        System.out.println("DTO Objetivo: " + dto.objetivo());
+
         FichaAtualizarRequestDTO withId = new FichaAtualizarRequestDTO(
                 id,
                 dto.nome(),
                 dto.objetivo()
         );
 
-        return ResponseEntity.ok(service.update(withId));
+        FichaResponseDTO resultado = service.update(withId);
+        System.out.println("Resultado - Objetivo: " + resultado.objetivo());
+        System.out.println("=== FIM CONTROLLER ===");
+
+        return ResponseEntity.ok(resultado);
     }
 
     // =====================================================
