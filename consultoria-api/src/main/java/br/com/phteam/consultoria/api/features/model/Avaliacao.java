@@ -1,6 +1,7 @@
 package br.com.phteam.consultoria.api.features.model;
 
-import br.com.phteam.consultoria.api.features.cliente.model.Cliente; // Relacionamento com Cliente
+import br.com.phteam.consultoria.api.features.cliente.model.Cliente;
+import br.com.phteam.consultoria.api.features.consultor.model.Consultor;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,17 +24,26 @@ public class Avaliacao {
     @Column(nullable = false, name = "data_avaliacao")
     private LocalDateTime dataAvaliacao = LocalDateTime.now();
 
+    @Column(nullable = false)
     private double peso; // Peso registrado na avaliação
 
+    @Column(nullable = false)
     private double percentualGordura; // % de gordura
 
     @Column(length = 200)
     private String observacoes;
 
-    // Relacionamento: Muitas Avaliações pertencem a Um Cliente (Many-to-One)
+    // ================================
+    // RELACIONAMENTO COM CLIENTE
+    // ================================
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
 
-    // Nota: Campos para URLs de fotos de progresso (antes/depois) podem ser adicionados.
+    // ================================
+    // RELACIONAMENTO COM CONSULTOR
+    // ================================
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "consultor_id", nullable = false)
+    private Consultor consultor;
 }
